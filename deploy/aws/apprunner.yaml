@@ -1,0 +1,14 @@
+version: 1.0
+runtime: python312
+build:
+  commands:
+    build:
+      - pip install -r backend/requirements.txt
+run:
+  runtime-version: 3.12
+  command: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+  network:
+    port: 8000
+  env:
+    - name: CONTACT_ALLOWED_ORIGINS
+      value: https://your-vercel-domain.example

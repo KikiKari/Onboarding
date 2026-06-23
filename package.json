@@ -1,0 +1,39 @@
+{
+  "name": "onboarding-project-pages",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "media:wavespeed": "node scripts/generate-wavespeed.mjs",
+    "media:elevenlabs": "node scripts/generate-elevenlabs.mjs",
+    "media:optimize": "node scripts/optimize-media.mjs",
+    "secret:scan": "node scripts/secret-scan.mjs"
+  },
+  "dependencies": {
+    "framer-motion": "^12.0.0",
+    "next": "^15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@testing-library/jest-dom": "^6.6.0",
+    "@testing-library/react": "^16.2.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.3.0",
+    "jsdom": "^26.0.0",
+    "sharp": "^0.34.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  }
+}

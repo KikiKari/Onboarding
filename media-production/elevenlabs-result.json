@@ -1,0 +1,7 @@
+{
+  "model": "eleven_multilingual_v2",
+  "voiceId": "JBFqnCBsd6RMkjVDRZzb",
+  "characters": 93,
+  "text": "Neun Projekte. Zwei Plattformen. Ein Ort, an dem Ideen verbunden und weiterentwickelt werden.",
+  "output": "public/audio/project-narration.mp3"
+}

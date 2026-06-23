@@ -1,0 +1,58 @@
+[
+  {
+    "id": "01-hero-meadow",
+    "requestId": "completed-before-resume",
+    "model": "google/nano-banana-2/edit",
+    "resolution": "4k",
+    "plannedCostUsd": 0.14,
+    "output": "hero-meadow.png"
+  },
+  {
+    "id": "02-glass-orb",
+    "requestId": "completed-before-resume",
+    "model": "google/nano-banana-2/edit",
+    "resolution": "4k",
+    "plannedCostUsd": 0.14,
+    "output": "glass-orb.png"
+  },
+  {
+    "id": "03-feature-spotlight",
+    "requestId": "completed-before-resume",
+    "model": "google/nano-banana-2/edit",
+    "resolution": "4k",
+    "plannedCostUsd": 0.14,
+    "output": "feature-spotlight.png"
+  },
+  {
+    "id": "04-claude-projects",
+    "requestId": "5bae15ac7c094c8ebeb2f6f39a487d51",
+    "model": "google/nano-banana-2/edit",
+    "resolution": "4k",
+    "plannedCostUsd": 0.14,
+    "output": "claude-projects.png"
+  },
+  {
+    "id": "05-perplexity-projects",
+    "requestId": "803fefa3157c42119b791f80b5617d82",
+    "model": "google/nano-banana-2/edit",
+    "resolution": "4k",
+    "plannedCostUsd": 0.14,
+    "output": "perplexity-projects.png"
+  },
+  {
+    "id": "06-cta-background",
+    "requestId": "fcb243d714bf42419279a2a58edfe472",
+    "model": "google/nano-banana-2/edit",
+    "resolution": "4k",
+    "plannedCostUsd": 0.14,
+    "output": "cta-background.png"
+  },
+  {
+    "id": "07-og-projects",
+    "requestId": "306e4082626f45d199ce59e53fe624eb",
+    "model": "google/nano-banana-2/edit",
+    "resolution": "4k",
+    "plannedCostUsd": 0.14,
+    "output": "og-projects.png"
+  }
+]

@@ -1,0 +1,12 @@
+node_modules
+.next
+.vercel
+.git
+.env*
+backend/.venv
+backend/__pycache__
+.pytest_cache
+backend/.pytest_cache
+**/__pycache__
+media-production/private
+media-production/raw

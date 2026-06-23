@@ -1,0 +1,10 @@
+.env*
+.pytest_cache/
+backend/
+deploy/
+docs/
+media-production/
+tests/
+design-reference/
+*.zip
+coverage/

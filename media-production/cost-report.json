@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-06-21",
+  "wavespeed": {
+    "plannedJobs": 7,
+    "unitCostUsd": 0.14,
+    "plannedCostUsd": 0.98,
+    "acceptedJobs": 7,
+    "actualCostUsd": 0.98,
+    "status": "completed",
+    "reason": "All seven approved 4K assets completed without search add-ons."
+  },
+  "elevenlabs": {
+    "tier": "free",
+    "characters": 93,
+    "creditsConsumed": 93,
+    "actualAdditionalCostUsd": 0,
+    "status": "completed",
+    "commercialLicenseNote": "Free-tier output requires regeneration or relicensing before commercial publication."
+  }
+}

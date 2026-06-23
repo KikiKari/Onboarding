@@ -1,0 +1,153 @@
+import type { Project } from "@/lib/types";
+
+export const siteContent = {
+  brand: "Projekt",
+  navigation: [
+    { label: "Projekte", href: "#projekte" },
+    { label: "Funktionen", href: "#funktionen" },
+    { label: "Demos", href: "#demos" },
+  ],
+  hero: {
+    badge: "9 Projekte — 2 Plattformen",
+    prefix: "Ihre Idee",
+    verbs: ["recherchiert", "verbindet", "erstellt", "analysiert", "übersetzt"],
+    subline:
+      "Ein kuratierter Arbeitsraum für KI-Skills, Browser-Experimente und robuste Werkzeuge – vom ersten Onboarding bis zur funktionierenden Project Page.",
+    primary: { label: "Projekte entdecken", href: "#projekte" },
+    secondary: { label: "Demos ansehen", href: "#demos" },
+    narration:
+      "Neun Projekte. Zwei Plattformen. Ein Ort, an dem Ideen verbunden und weiterentwickelt werden.",
+  },
+  features: [
+    {
+      title: "Klare Projektwege",
+      text: "Jede Idee erhält eine eigene, verständliche Seite mit Zweck, Technik und direktem Quelllink.",
+      href: "#projekte",
+      icon: "circle",
+    },
+    {
+      title: "Echte Experimente",
+      text: "Interaktive Demos machen die Projekte erlebbar, ohne Schlüssel oder sensible Konfiguration offenzulegen.",
+      href: "#demos",
+      icon: "diamond",
+    },
+    {
+      title: "Saubere Übergabe",
+      text: "Tokenbasiertes Design, Docker und getrennte Deploy-Ziele schaffen eine belastbare Ausgangsbasis.",
+      href: "#kontakt",
+      icon: "plus",
+    },
+  ],
+  steps: [
+    { number: "01", title: "Orientieren", text: "Projektfamilie und passenden Einstieg auswählen." },
+    { number: "02", title: "Erleben", text: "Details lesen oder eine interaktive Demo öffnen." },
+    { number: "03", title: "Verbinden", text: "Über das Kontaktformular den nächsten Schritt anstoßen." },
+  ],
+};
+
+const repo = "https://github.com/KikiKari/Projects/tree";
+
+export const projects: Project[] = [
+  {
+    slug: "abstractions",
+    title: "Abstractions",
+    platform: "Claude",
+    summary: "Multi-Node Abstraction Manager für automatisierte Portierungen.",
+    detail: "Portiert OpenClaw-Skripte per Cron in zehn Zielsprachen und pflegt Statusberichte sowie Dokumentationsdatenbanken.",
+    tags: ["Automation", "OpenClaw", "Multi-Language"],
+    github: `${repo}/abstractions`,
+    media: "/media/claude-projects.png",
+    accent: "accent",
+  },
+  {
+    slug: "clawhub",
+    title: "ClawHub Sync",
+    platform: "Claude",
+    summary: "Bidirektionaler Sync- und Publish-Agent für Skills.",
+    detail: "Gleicht Skills zwischen ClawHub und Git ab und automatisiert Commits, Versionierung und Veröffentlichung.",
+    tags: ["Agents", "Git", "Publishing"],
+    github: `${repo}/clawhub`,
+    media: "/media/claude-projects.png",
+    accent: "teal",
+  },
+  {
+    slug: "python-hardener",
+    title: "Python Hardener",
+    platform: "Claude",
+    summary: "Automatisierte Sicherheits- und Qualitätsverbesserung für Python.",
+    detail: "Härtet Skripte gegen Shell-Injection, verbessert Logging und atomare Writes und dokumentiert jede Änderung.",
+    tags: ["Python", "Security", "Evaluation"],
+    github: `${repo}/python-hardener`,
+    media: "/media/claude-projects.png",
+    accent: "amber",
+  },
+  {
+    slug: "secret-vault-public",
+    title: "Secret Vault",
+    platform: "Claude",
+    summary: "Clientseitiger, verschlüsselter Secret-Container.",
+    detail: "Ein Browser-Artefakt mit WebCrypto, AES-256-GCM und PBKDF2 zum Anlegen, Rotieren und Exportieren von Secrets.",
+    tags: ["WebCrypto", "Privacy", "Browser"],
+    github: `${repo}/secret-vault-public`,
+    media: "/media/claude-projects.png",
+    accent: "accent",
+  },
+  {
+    slug: "tagesstatus-live-public",
+    title: "Tagesstatus Live",
+    platform: "Claude",
+    summary: "Umgebungsunabhängige Statusseite für mehrere Dienste.",
+    detail: "Zeigt Live-Daten von GitHub, OpenRouter, OpenAI, Anthropic, Tailscale und ClawHub; Tokens bleiben lokal.",
+    tags: ["Monitoring", "APIs", "Status"],
+    github: `${repo}/tagesstatus-live-public`,
+    media: "/media/claude-projects.png",
+    accent: "teal",
+  },
+  {
+    slug: "tiktok-monitor",
+    title: "TikTok Live Monitor",
+    platform: "Claude",
+    summary: "Datenprovider für TikTok-LIVE-Status und Stream-URLs.",
+    detail: "Prüft den Live-Status, löst m3u8-Streams auf und meldet Go-live-, Go-offline- und Rename-Ereignisse.",
+    tags: ["Monitoring", "Streaming", "Daemon"],
+    github: `${repo}/tiktok-monitor`,
+    media: "/media/claude-projects.png",
+    accent: "amber",
+  },
+  {
+    slug: "program-derivation",
+    title: "Program Derivation",
+    platform: "Perplexity",
+    summary: "Formale Programmableitung und Architekturmetriken.",
+    detail: "Analysiert Abstraktionsschichten, Komplexität, Kopplung, Kohäsion und Vendor Lock-in mit deutsch- und englischsprachigen Referenzen.",
+    tags: ["Architecture", "Metrics", "Research"],
+    github: `${repo}/Program-Derivation`,
+    media: "/media/perplexity-projects.png",
+    accent: "accent",
+  },
+  {
+    slug: "vision-check",
+    title: "Vision-Check",
+    platform: "Perplexity",
+    summary: "On-Device-Biodiversitätserkennung im Browser.",
+    detail: "Verarbeitet Kamera- oder Upload-Bilder lokal, bietet eine Bildverbesserungspipeline und visualisiert erkannte Objekte.",
+    tags: ["Computer Vision", "TensorFlow.js", "Canvas"],
+    github: `${repo}/Vision-Check`,
+    demo: "/demos/vision-check",
+    media: "/media/feature-spotlight.png",
+    accent: "teal",
+  },
+  {
+    slug: "weather-check",
+    title: "Weather-Check",
+    platform: "Perplexity",
+    summary: "Lokaler Regen-Check als PWA und Recherche-Prompt.",
+    detail: "Verdichtet Radar-, Stations-, Satelliten- und Webcam-Signale zu einer Niederschlagseinschätzung für 30, 60 und 120 Minuten.",
+    tags: ["Weather", "PWA", "Data Fusion"],
+    github: `${repo}/Weather-Check`,
+    media: "/media/perplexity-projects.png",
+    accent: "amber",
+  },
+];
+
+export const projectBySlug = new Map(projects.map((project) => [project.slug, project]));
