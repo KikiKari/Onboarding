@@ -5,7 +5,9 @@ export const metadata: Metadata = {
   title: { default: "Projekt – Ideen werden Systeme", template: "%s | Projekt" },
   description:
     "Neun KI-Projekte, zwei Plattformen und ein gemeinsamer Ort für funktionierende Experimente.",
-  metadataBase: new URL("https://example.com"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://produkt-landingpage-3bb41d0a.vercel.app",
+  ),
   openGraph: {
     title: "Projekt – Ideen werden Systeme",
     description: "Onboarding, Projektseiten und interaktive Demos.",
