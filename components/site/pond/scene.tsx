@@ -20,7 +20,9 @@ const ACCENT_HEX: Record<string, string> = {
 };
 
 // Master orb resting spot on the left "shore", and the splash impact point.
-const MASTER_REST: [number, number, number] = [-3.1, 0.42, 1.6];
+// Master-Orb Ruheposition: näher zur Mitte damit er in allen Viewport-Größen
+// sichtbar bleibt (auch bei schmalen mobilen Ansichten).
+const MASTER_REST: [number, number, number] = [-2.2, 0.42, 1.9];
 const SPLASH_POINT: [number, number, number] = [0, 0.18, 0.4];
 
 /** Nine pads in a circle: 12 o'clock start, clockwise. */

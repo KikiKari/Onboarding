@@ -85,9 +85,6 @@ export function PondCanvas({ reduce }: { reduce: boolean }) {
         dpr={[1, 1.5]}
         camera={{ position: [0, 3.4, 6.2], fov: 42 }}
         gl={{ antialias: true, alpha: true }}
-        onPointerMissed={() => {
-          if (!reduce && phase === "distributed") setPhase("idle");
-        }}
       >
         <PondScene
           phase={phase}
@@ -112,7 +109,9 @@ export function PondCanvas({ reduce }: { reduce: boolean }) {
         )}
       </Canvas>
 
-      {/* Idle hint over the master orb. */}
+      {/* Idle hint — zentraler Startpunkt der Story-Sequenz.
+          Wird immer im Viewport-Zentrum unten platziert, ist damit responsiv
+          erreichbar und der primäre Trigger für die gesamte Interaktion. */}
       <AnimatePresence>
         {phase === "idle" && (
           <motion.button
@@ -124,12 +123,24 @@ export function PondCanvas({ reduce }: { reduce: boolean }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="focus-ring absolute left-[14%] top-[62%] -translate-x-1/2 rounded-[var(--radius-pill)] border border-line bg-surface/85 px-3.5 py-1.5 font-mono text-[0.6875rem] text-ink shadow-[var(--shadow-sm)] backdrop-blur"
+            className="focus-ring absolute left-1/2 bottom-6 -translate-x-1/2 rounded-[var(--radius-pill)] border border-line bg-surface/90 px-5 py-2 font-mono text-xs text-ink shadow-[var(--shadow-md)] backdrop-blur hover:bg-surface hover:shadow-[var(--shadow-lg)] transition-all"
+            aria-label={`${heroPond.masterLink.label} — startet Teich-Sequenz`}
           >
             {heroPond.masterLink.label} →
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* Debug phase indicator (nur in development sichtbar). */}
+      {process.env.NODE_ENV === "development" && (
+        <div
+          data-pond-phase={phase}
+          className="pointer-events-none absolute right-3 top-3 rounded bg-black/70 px-2 py-1 font-mono text-[10px] text-white"
+        >
+          {phase}
+          {focusedProject ? ` · ${focusedProject}` : ""}
+        </div>
+      )}
 
       {/* Focused project card. */}
       <AnimatePresence>
