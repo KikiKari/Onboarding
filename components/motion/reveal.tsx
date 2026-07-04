@@ -8,10 +8,12 @@ export function Reveal({ children, delay = 0, className = "" }: PropsWithChildre
   return (
     <motion.div
       className={className}
-      initial={reduce ? false : { opacity: 0, y: 18 }}
-      whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+      // Always animate to a visible state on scroll-in. Under reduced motion we
+      // skip the offset/duration so content simply appears (never stuck hidden).
+      initial={{ opacity: 0, y: reduce ? 0 : 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.18 }}
-      transition={{ duration: 0.8, delay, ease: [0.22, 0.61, 0.36, 1] }}
+      transition={reduce ? { duration: 0 } : { duration: 0.8, delay, ease: [0.22, 0.61, 0.36, 1] }}
     >
       {children}
     </motion.div>

@@ -27,6 +27,12 @@ export function Footer() {
           <span>© 2026 PROJEKT — MIT</span>
           <span>9 PROJEKTE / 2 PLATTFORMEN</span>
         </div>
+        <p className="mt-4 text-xs text-[var(--footer-muted)]">
+          Fotografische Basiselemente:{" "}
+          <a href="https://www.vecteezy.com/" className="underline hover:text-[var(--footer-fg)]">Vecteezy</a>{" "}·{" "}
+          Lizenz gemäß{" "}
+          <a href="https://api.vecteezy.com/free-photos/pad" className="underline hover:text-[var(--footer-fg)]">Vecteezy Free-Content-Attribution-Policy</a>
+        </p>
       </Container>
     </footer>
   );

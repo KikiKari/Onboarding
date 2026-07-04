@@ -45,6 +45,14 @@ export const siteContent = {
   ],
 };
 
+export const heroPond = {
+  masterLink: {
+    label: "Alle Projekte",
+    href: "https://github.com/KikiKari/Projects",
+    description: "Zum GitHub-Repo mit allen 9 Branches",
+  },
+} as const;
+
 const repo = "https://github.com/KikiKari/Projects/tree";
 
 export const projects: Project[] = [

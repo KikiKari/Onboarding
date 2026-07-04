@@ -3,9 +3,10 @@ import Link from "next/link";
 import { Reveal } from "@/components/motion/reveal";
 import { ContactForm } from "@/components/site/contact-form";
 import { Footer } from "@/components/site/footer";
-import { GlobeHero } from "@/components/site/globe-hero";
 import { Header } from "@/components/site/header";
 import { NarrationToggle } from "@/components/site/narration-toggle";
+import { PondHero } from "@/components/site/pond-hero";
+import { ProjectList } from "@/components/site/project-list";
 import { RotatingHeadline } from "@/components/site/rotating-headline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Hero } from "@/components/ui/hero";
 import { Section } from "@/components/ui/section";
-import { projects, siteContent } from "@/content";
+import { siteContent } from "@/content";
 
 const iconPaths = {
   circle: <circle cx="12" cy="12" r="7" />,
@@ -37,14 +38,10 @@ export default function Home() {
                 {siteContent.hero.prefix} <RotatingHeadline words={siteContent.hero.verbs} />
               </h1>
             </Reveal>
-            <Reveal delay={0.08}><GlobeHero /></Reveal>
             <Reveal delay={0.16} className="flex flex-col items-center gap-5 text-center">
               <p className="m-0 max-w-[56ch] text-[clamp(1rem,1.5vw,1.1875rem)] leading-relaxed text-ink-2">{siteContent.hero.subline}</p>
-              <div className="flex flex-wrap justify-center gap-3.5">
-                <Button href={siteContent.hero.primary.href}>{siteContent.hero.primary.label} →</Button>
-                <Button href={siteContent.hero.secondary.href} variant="secondary">{siteContent.hero.secondary.label}</Button>
-              </div>
             </Reveal>
+            <Reveal delay={0.08}><PondHero /></Reveal>
           </Container>
           <NarrationToggle />
         </Hero>
@@ -75,22 +72,16 @@ export default function Home() {
           </Container>
         </Section>
 
-        <Section id="projekte" className="border-y border-line bg-surface-2">
+        <Section id="projekte" className="border-y border-line bg-[var(--bg)]">
           <Container>
-            <Reveal className="mb-12 max-w-[60ch]">
+            <Reveal className="mb-10 max-w-[60ch]">
               <span className="eyebrow text-muted">Projekte</span>
               <h2 className="display mt-3.5 text-[clamp(2rem,4vw,2.875rem)] leading-tight">Neun eigenständige Werkzeuge, ein gemeinsamer Rahmen.</h2>
+              <p className="mt-4 text-[1.0625rem] leading-relaxed text-ink-2">Jede Kugel im Teich entspricht einer dieser Zeilen — hier ruhen sie still und geordnet.</p>
             </Reveal>
-            <div className="grid gap-px overflow-hidden rounded-[var(--radius-lg)] border border-line bg-line md:grid-cols-3">
-              {projects.map((project) => (
-                <Link href={`/projects/${project.slug}`} className="group bg-bg p-6 no-underline transition hover:bg-surface" key={project.slug}>
-                  <span className="eyebrow text-muted">{project.platform}</span>
-                  <h3 className="display mt-3 text-2xl group-hover:text-accent">{project.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted">{project.summary}</p>
-                  <span className="mt-6 inline-block font-mono text-xs text-accent">/{project.slug} →</span>
-                </Link>
-              ))}
-            </div>
+            <Reveal>
+              <ProjectList />
+            </Reveal>
           </Container>
         </Section>
 
