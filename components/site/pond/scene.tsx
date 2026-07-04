@@ -1,6 +1,6 @@
 "use client";
 
-import { Environment } from "@react-three/drei";
+import { Environment, MeshTransmissionMaterial, useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -45,6 +45,22 @@ function easeInOut(t: number) {
   return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 }
 
+/** Soft-focus ground bed beneath the pond so the water reads as integrated
+ *  into a natural setting rather than a rectangular cutout. */
+function GroundBed() {
+  const tex = useTexture("/media/pond/concepts/variante-A.webp");
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.12, 0]} receiveShadow>
+      <planeGeometry args={[26, 22]} />
+      {/* Darkened + mossy-tinted so the water above reads as deep, not pale.
+          The bright ivory of variante-A would otherwise wash through the
+          transparent surface. */}
+      <meshBasicMaterial map={tex} color="#5a6a52" toneMapped={false} />
+    </mesh>
+  );
+}
+
 export function PondScene({
   phase,
   focusedProject,
@@ -54,6 +70,7 @@ export function PondScene({
   onProjectClick,
   onSplashDone,
   reduce,
+  highQuality,
 }: {
   phase: Phase;
   focusedProject: string | null;
@@ -63,6 +80,7 @@ export function PondScene({
   onProjectClick: (slug: string) => void;
   onSplashDone: () => void;
   reduce: boolean;
+  highQuality: boolean;
 }) {
   const layout = useMemo(() => buildLayout(), []);
   const splashRef = useRef<{ x: number; y: number; t: number } | null>(null);
@@ -108,6 +126,7 @@ export function PondScene({
       />
       <Suspense fallback={null}>
         <Environment preset="park" />
+        <GroundBed />
         <Blossoms />
         <Water splashRef={splashRef} />
         <LilyPads layout={layout} />
@@ -119,6 +138,7 @@ export function PondScene({
             onHover={onMasterHover}
             onClick={onMasterClick}
             reduce={reduce}
+            highQuality={highQuality}
           />
         )}
 
@@ -149,6 +169,7 @@ export function PondScene({
                 visible
                 emergeProgress={emerge}
                 accentColor={ACCENT_HEX[project.accent] ?? "#ffffff"}
+                highQuality={highQuality}
                 onPointerOver={() => setFocusedProject(project.slug)}
                 onPointerOut={() => setFocusedProject(null)}
                 onClick={() => onProjectClick(project.slug)}
@@ -165,11 +186,13 @@ function MasterOrb({
   onHover,
   onClick,
   reduce,
+  highQuality,
 }: {
   posRef: React.MutableRefObject<THREE.Vector3>;
   onHover: () => void;
   onClick: () => void;
   reduce: boolean;
+  highQuality: boolean;
 }) {
   const group = useRef<THREE.Group>(null);
   useFrame((state) => {
@@ -196,17 +219,32 @@ function MasterOrb({
     >
       <mesh castShadow>
         <sphereGeometry args={[0.42, 64, 64]} />
-        <meshPhysicalMaterial
-          transmission={1}
-          thickness={0.6}
-          roughness={0.04}
-          ior={1.5}
-          metalness={0}
-          clearcoat={1}
-          clearcoatRoughness={0.08}
-          envMapIntensity={1.8}
-          color="white"
-        />
+        {highQuality ? (
+          <MeshTransmissionMaterial
+            transmission={1}
+            thickness={0.4}
+            roughness={0}
+            ior={1.5}
+            chromaticAberration={0.06}
+            distortion={0.1}
+            temporalDistortion={0.1}
+            backside
+            samples={4}
+            resolution={512}
+          />
+        ) : (
+          <meshPhysicalMaterial
+            transmission={1}
+            thickness={0.6}
+            roughness={0.04}
+            ior={1.5}
+            metalness={0}
+            clearcoat={1}
+            clearcoatRoughness={0.08}
+            envMapIntensity={1.8}
+            color="white"
+          />
+        )}
       </mesh>
       {/* Luminous halo. */}
       <mesh scale={1.35}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { MeshTransmissionMaterial } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import * as THREE from "three";
@@ -15,11 +16,16 @@ type GlassOrbProps = {
   onPointerOut?: () => void;
   onClick?: () => void;
   accentColor?: string;
+  /** High-quality transmission on capable devices; physical-material fallback otherwise. */
+  highQuality?: boolean;
 };
 
 /**
- * A luminous glass sphere using transmission-based physical material.
- * Springs up + scales on hover. Emerge animation lifts it from the water.
+ * A transparent, refracting glass sphere. On capable devices it uses
+ * MeshTransmissionMaterial for real chromatic-aberration refraction (like the
+ * concept renders); on low-end / reduced-motion it falls back to a lighter
+ * meshPhysicalMaterial. Springs up + scales on hover; emerge lifts it from
+ * the water.
  */
 export function GlassOrb({
   position,
@@ -31,6 +37,7 @@ export function GlassOrb({
   onPointerOut,
   onClick,
   accentColor = "#ffffff",
+  highQuality = true,
 }: GlassOrbProps) {
   const group = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
@@ -40,7 +47,6 @@ export function GlassOrb({
     if (!group.current) return;
     const wantScale = (hovered || focused ? 1.14 : 1) * emergeProgress;
     const wantLift = hovered || focused ? 0.12 : 0;
-    // Simple critically-damped follow toward targets.
     const k = 1 - Math.pow(0.001, delta);
     target.current.scale += (wantScale - target.current.scale) * k;
     target.current.lift += (wantLift - target.current.lift) * k;
@@ -74,24 +80,41 @@ export function GlassOrb({
     >
       <mesh castShadow>
         <sphereGeometry args={[radius, 48, 48]} />
-        <meshPhysicalMaterial
-          transmission={1}
-          thickness={0.5}
-          roughness={0.05}
-          ior={1.5}
-          metalness={0}
-          clearcoat={1}
-          clearcoatRoughness={0.1}
-          envMapIntensity={1.5}
-          color="white"
-          transparent
-          opacity={emergeProgress}
-        />
+        {highQuality ? (
+          <MeshTransmissionMaterial
+            transmission={1}
+            thickness={0.4}
+            roughness={0}
+            ior={1.5}
+            chromaticAberration={0.06}
+            distortion={0.1}
+            temporalDistortion={0.1}
+            backside
+            samples={4}
+            resolution={512}
+            transparent
+            opacity={emergeProgress}
+          />
+        ) : (
+          <meshPhysicalMaterial
+            transmission={1}
+            thickness={0.5}
+            roughness={0.05}
+            ior={1.5}
+            metalness={0}
+            clearcoat={1}
+            clearcoatRoughness={0.1}
+            envMapIntensity={1.5}
+            color="white"
+            transparent
+            opacity={emergeProgress}
+          />
+        )}
       </mesh>
-      {/* Tinted inner ring hints the project accent color. */}
-      <mesh scale={0.82}>
+      {/* Faint accent tint hints the project colour without clouding the glass. */}
+      <mesh scale={0.86}>
         <sphereGeometry args={[radius, 24, 24]} />
-        <meshBasicMaterial color={accentColor} transparent opacity={0.14 * emergeProgress} />
+        <meshBasicMaterial color={accentColor} transparent opacity={0.08 * emergeProgress} />
       </mesh>
     </group>
   );

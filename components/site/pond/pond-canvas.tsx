@@ -1,6 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
+import { Bloom, DepthOfField, EffectComposer } from "@react-three/postprocessing";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { heroPond, projects } from "@/content";
@@ -16,6 +17,16 @@ export function PondCanvas({ reduce }: { reduce: boolean }) {
   const [phase, setPhase] = useState<Phase>(reduce ? "distributed" : "idle");
   const [focusedProject, setFocusedProject] = useState<string | null>(null);
   const timers = useRef<number[]>([]);
+
+  // Capability gate: high-quality transmission + post-FX only when the device
+  // pixel ratio is modest (<= 1.5) and the user hasn't asked to reduce motion.
+  // Low-end / high-DPR / reduced-motion falls back to the lighter path.
+  const [highQuality, setHighQuality] = useState(false);
+  useEffect(() => {
+    const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 2;
+    setHighQuality(dpr <= 1.5 && !reduce);
+  }, [reduce]);
+  const postFx = highQuality;
 
   const clearTimers = () => {
     timers.current.forEach((t) => window.clearTimeout(t));
@@ -71,7 +82,7 @@ export function PondCanvas({ reduce }: { reduce: boolean }) {
     >
       <Canvas
         shadows
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
         camera={{ position: [0, 3.4, 6.2], fov: 42 }}
         gl={{ antialias: true, alpha: true }}
         onPointerMissed={() => {
@@ -87,7 +98,18 @@ export function PondCanvas({ reduce }: { reduce: boolean }) {
           onProjectClick={onProjectClick}
           onSplashDone={() => {}}
           reduce={reduce}
+          highQuality={highQuality}
         />
+        {postFx && (
+          <EffectComposer>
+            {/* Keep the interactive pond sharp; only the far blossom layer melts
+                into bokeh. A tight focalLength at this camera distance would
+                blur the whole scene, so we focus near the pond and let the
+                background fall off. */}
+            <DepthOfField focusDistance={0.012} focalLength={0.2} bokehScale={3} />
+            <Bloom intensity={0.18} luminanceThreshold={0.92} luminanceSmoothing={0.6} mipmapBlur />
+          </EffectComposer>
+        )}
       </Canvas>
 
       {/* Idle hint over the master orb. */}
