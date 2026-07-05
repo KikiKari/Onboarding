@@ -54,24 +54,56 @@ const POND_CONFIG = {
   // Kugel-Zentrum bei 31.7% x / 48.8% y im 16:9 Stage.
   masterPosition: { left: "32.2%", top: "48.8%", size: "clamp(170px, 14vw, 230px)" },
   // 9 Kugeln in 3D-Perspektive auf dem RECHTEN Blatt.
-  // Kamera schaut leicht von oben - hintere Kugeln (kleiner y) sind kleiner &
-  // dichter am Horizont, vordere (groesserer y) sind gross und deutlich vorne.
-  // Drei Reihen: hinten/mitte/vorne, jede mit natuerlicher x-Streuung.
+  // Blatt-Ellipse-Zentrum (73, 58), Halbachsen (14, 10) - enger als Blatt-Grenzen
+  // damit Kugeln WIRKLICH auf Blattflaeche liegen und nicht am Rand haengen.
+  // Kamera-Perspektive: hinten klein, vorne gross, y-abhaengige Skalierung.
   orbLayout: [
-    // HINTEN (klein, hoch am Blatt) - wirken durch die Perspektive weiter weg
-    { x: 66.0, y: 47.0, scale: 0.25, z: 2 },
-    { x: 74.0, y: 46.0, scale: 0.28, z: 3 },
-    { x: 82.0, y: 47.5, scale: 0.26, z: 2 },
-    // MITTE (mittelgross)
-    { x: 63.0, y: 57.0, scale: 0.36, z: 4 },
-    { x: 73.0, y: 56.0, scale: 0.42, z: 5 },
-    { x: 85.0, y: 58.0, scale: 0.34, z: 4 },
-    // VORNE (gross, tief am Blatt) - dominant im Sichtfeld
-    { x: 66.5, y: 66.0, scale: 0.50, z: 6 },
-    { x: 76.0, y: 68.0, scale: 0.60, z: 8 },
-    { x: 86.0, y: 65.0, scale: 0.48, z: 6 },
+    // HINTEN (y 51-53, klein) - wirken durch die Perspektive weiter weg
+    { x: 68.0, y: 51.0, scale: 0.24, z: 2 },
+    { x: 76.0, y: 50.5, scale: 0.26, z: 3 },
+    { x: 82.5, y: 52.0, scale: 0.24, z: 2 },
+    // MITTE (y 57-59, mittelgross)
+    { x: 65.5, y: 58.0, scale: 0.32, z: 4 },
+    { x: 73.5, y: 57.5, scale: 0.36, z: 5 },
+    { x: 81.0, y: 58.5, scale: 0.30, z: 4 },
+    // VORNE (y 63-66, gross) - dominant im Sichtfeld
+    { x: 68.0, y: 64.0, scale: 0.42, z: 6 },
+    { x: 76.0, y: 65.5, scale: 0.48, z: 8 },
+    { x: 83.0, y: 63.5, scale: 0.40, z: 6 },
   ] as OrbPosition[],
 } as const;
+
+/**
+ * Regen-Tropfen Positionen: 24 zufaellige aber deterministische Punkte ueber
+ * das ganze Bild verteilt, mit staggered delays und durations damit sie sich
+ * nicht synchron abspielen sondern kontinuierlich überall im Bild fallen.
+ */
+const RAIN_DROPS = [
+  { x: 12, y: 78, size: 4, delay: 0.0, duration: 3.2 },
+  { x: 25, y: 62, size: 3, delay: 0.8, duration: 3.8 },
+  { x: 38, y: 85, size: 5, delay: 1.5, duration: 3.4 },
+  { x: 48, y: 55, size: 3, delay: 2.1, duration: 4.0 },
+  { x: 55, y: 72, size: 4, delay: 0.4, duration: 3.6 },
+  { x: 62, y: 40, size: 3, delay: 2.8, duration: 3.9 },
+  { x: 72, y: 78, size: 4, delay: 1.2, duration: 3.3 },
+  { x: 82, y: 45, size: 3, delay: 3.2, duration: 4.1 },
+  { x: 92, y: 68, size: 4, delay: 0.6, duration: 3.7 },
+  { x: 18, y: 45, size: 3, delay: 3.5, duration: 3.5 },
+  { x: 33, y: 25, size: 4, delay: 1.9, duration: 4.2 },
+  { x: 50, y: 88, size: 5, delay: 2.4, duration: 3.1 },
+  { x: 68, y: 60, size: 3, delay: 0.2, duration: 3.9 },
+  { x: 88, y: 30, size: 4, delay: 2.6, duration: 3.8 },
+  { x: 8, y: 55, size: 3, delay: 1.4, duration: 4.0 },
+  { x: 42, y: 68, size: 3, delay: 3.0, duration: 3.4 },
+  { x: 58, y: 20, size: 4, delay: 0.9, duration: 4.3 },
+  { x: 78, y: 85, size: 5, delay: 2.0, duration: 3.2 },
+  { x: 95, y: 82, size: 3, delay: 1.7, duration: 3.6 },
+  { x: 15, y: 30, size: 4, delay: 2.3, duration: 3.9 },
+  { x: 45, y: 15, size: 3, delay: 0.3, duration: 4.1 },
+  { x: 65, y: 90, size: 5, delay: 3.4, duration: 3.3 },
+  { x: 85, y: 62, size: 4, delay: 0.7, duration: 3.7 },
+  { x: 28, y: 50, size: 3, delay: 2.7, duration: 4.0 },
+];
 
 /** Neue Glaskugeln V2 via gpt-image-2 mit master.png als Referenz - konsistenter Look mit Master */
 const ORB_FILES = [
@@ -145,28 +177,29 @@ export function PondExperience() {
 
     setMasterHovered(false);
 
-    // Story-Flow mit Wasserwellen-Puls beim Klick:
-    //   0ms:    Erste Welle startet, zentrales Highlight leuchtet auf
-    //  350ms:  Zweite Welle startet
-    //  700ms:  Dritte Welle startet
-    // 1100ms:  Splash-Video startet dahinter (Wellen noch aktiv)
-    // 2300ms:  Letzte Welle faded aus
-    // 5000ms:  9 Kugeln beginnen einzublenden
-    // 5800ms:  Splash-Video zu Ende, fadet aus
+    // Story-Flow mit vollflaechigem Weiss-Fade-Uebergang:
+    //   0ms:    Weissblende beginnt sich vom Orb aus zu fuellen
+    //  600ms:  Blende ist ~85% weiss, Splash-Video wird DAHINTER gestartet
+    // 1400ms:  Blende faded runter, Rolling-Kugel im Splash wird sichtbar
+    // 2500ms:  Blende komplett weg, nur noch Splash-Video sichtbar
+    // 5000ms:  Splash-Video zu Ende, faded aus
+    // 5300ms:  9 Kugeln steigen aus dem Wasser auf
 
     setLightBurst(true);
     setPhase("splashing");
 
+    // Splash-Video startet WAEHREND die Blende noch weiss ist (Uebergang komplett verdeckt)
     const t1 = setTimeout(() => {
       setSplashActive(true);
       requestAnimationFrame(() => {
         splashVideoRef.current?.play().catch(() => {});
       });
-    }, 1100);
+    }, 600);
 
-    const t2 = setTimeout(() => setLightBurst(false), 2400);
+    const t2 = setTimeout(() => setLightBurst(false), 2500);
+    // Kugeln erscheinen NACHDEM das Splash-Video zu Ende ist
     const t3 = setTimeout(() => setPhase("distributed"), 5000);
-    const t4 = setTimeout(() => setSplashActive(false), 5800);
+    const t4 = setTimeout(() => setSplashActive(false), 5000);
 
     timersRef.current.push(t1, t2, t3, t4);
   }
@@ -238,6 +271,50 @@ export function PondExperience() {
         <source src={config.hero} type="video/mp4" />
       </video>
 
+      {/* LAYER 1b: Regen-Overlay - 24 zufaellig positionierte Tropfen die auf
+          die Wasseroberflaeche fallen und Miniwellen ausloesen. Endless loop
+          mit unterschiedlichen delays und durations pro Tropfen. */}
+      {!splashActive && phase !== "click-splash" && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none overflow-hidden"
+          style={{ zIndex: 5, mixBlendMode: "screen" }}
+        >
+          {RAIN_DROPS.map((d, i) => (
+            <div
+              key={`rain-${i}`}
+              className="pond-raindrop"
+              style={{
+                position: "absolute",
+                left: `${d.x}%`,
+                top: `${d.y}%`,
+                width: `${d.size}px`,
+                height: `${d.size}px`,
+                borderRadius: "50%",
+                animationDelay: `${d.delay}s`,
+                animationDuration: `${d.duration}s`,
+              }}
+            />
+          ))}
+          <style>{`
+            @keyframes pond-drop {
+              0% { opacity: 0; transform: scale(0.2); box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+              10% { opacity: 0.9; transform: scale(1); }
+              45% { opacity: 0.7; transform: scale(2.5); box-shadow: 0 0 0 6px rgba(255,255,255,0.35), 0 0 0 12px rgba(255,255,255,0.15); }
+              80% { opacity: 0.3; transform: scale(5); box-shadow: 0 0 0 16px rgba(255,255,255,0.1), 0 0 0 26px rgba(255,255,255,0); }
+              100% { opacity: 0; transform: scale(7); box-shadow: 0 0 0 32px rgba(255,255,255,0); }
+            }
+            .pond-raindrop {
+              background: radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(220,240,255,0.5) 50%, rgba(255,255,255,0) 80%);
+              animation-name: pond-drop;
+              animation-iteration-count: infinite;
+              animation-timing-function: ease-out;
+              filter: blur(0.5px);
+            }
+          `}</style>
+        </div>
+      )}
+
       {/* LAYER 2: Splash-Video (Overlay, positioniert wo der Master lag).
           Startet OHNE Fade-in - Video zeigt selbst die rollende Kugel, also
           soll der Klick direkt in die Rolling-Sequenz uebergehen. */}
@@ -273,9 +350,9 @@ export function PondExperience() {
             aria-label={heroPond.masterLink.label}
             className="focus-ring absolute z-20 cursor-pointer"
             initial={{ opacity: 0, x: "-50%", y: "-50%" }}
-            animate={{ opacity: 1, x: "-50%", y: "-50%", scale: masterHovered ? 1.05 : 1 }}
+            animate={{ opacity: 1, x: "-50%", y: "-50%", scale: masterHovered ? 1.15 : 1 }}
             exit={{ opacity: 0, x: "-50%", y: "-50%", transition: { duration: 0 } }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             style={{
               left: config.masterPosition.left,
               top: config.masterPosition.top,
@@ -287,9 +364,24 @@ export function PondExperience() {
               transformOrigin: "center center",
             }}
           >
-            {/* Master-Orb-Button: reine Hitbox für Klick/Hover.
+            {/* Master-Orb-Button: Hitbox mit sichtbarem Hover-Glow-Ring.
                 Die im Idle-Video eingebettete Kugel bleibt visuell sichtbar.
-                KEIN Rolling-Sprite - das Splash-Video zeigt selbst die rollende Kugel. */}
+                Ein warmer Ring erscheint beim Hover als visueller Hinweis. */}
+            <motion.span
+              aria-hidden="true"
+              initial={false}
+              animate={{ opacity: masterHovered ? 1 : 0 }}
+              transition={{ duration: 0.3 }}
+              style={{
+                position: "absolute",
+                inset: "-15%",
+                borderRadius: "50%",
+                background:
+                  "radial-gradient(circle, rgba(255,255,255,0) 42%, rgba(255,245,220,0.5) 52%, rgba(255,220,180,0.25) 62%, rgba(255,255,255,0) 78%)",
+                filter: "blur(6px)",
+                pointerEvents: "none",
+              }}
+            />
             <span className="sr-only" style={{ pointerEvents: "none" }}>
               {heroPond.masterLink.label}
             </span>
@@ -297,77 +389,32 @@ export function PondExperience() {
         )}
       </AnimatePresence>
 
-      {/* LAYER 4b: Puls-Wellen wie Wasser - konzentrische Lichtringe expandieren
-          aus dem Orb-Zentrum wie Wellen auf einem Teich (2.4s Gesamtdauer).
-          3 Ringe, jeder mit 400ms Versatz gestartet, expandieren nach aussen,
-          werden dabei duenner und faden aus. Zentrales Highlight bleibt sichtbar. */}
+      {/* LAYER 4b: Klick-Uebergang - ganzflaechige weiche Weissblende die
+          den kompletten Video-Wechsel ueberdeckt. Aus dem Orb aufsteigend,
+          fuellt kurz den ganzen Screen, ebbt dann wieder ab.
+
+          Ablauf (2.5s):
+          -   0ms: Weißblende beginnt aus dem Orb-Zentrum zu waschen
+          - 600ms: Screen ist ~85% weiß, Splash-Video startet DAHINTER
+          - 1400ms: Blende faded langsam runter (Rolling-Kugel wird sichtbar)
+          - 2500ms: Blende weg, Splash-Video komplett zu sehen */}
       <AnimatePresence>
         {lightBurst && (
-          <>
-            {/* Zentrales Highlight - nur ein leiser Schein am Klickpunkt */}
-            <motion.div
-              key="pulse-center"
-              aria-hidden="true"
-              className="absolute z-25 pointer-events-none"
-              initial={{ opacity: 0, scale: 0.4, x: "-50%", y: "-50%" }}
-              animate={{
-                opacity: [0, 0.9, 0.6, 0.3, 0],
-                scale: [0.4, 0.9, 1.1, 1.3, 1.5],
-                x: "-50%",
-                y: "-50%",
-              }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.2, ease: "easeOut", times: [0, 0.15, 0.4, 0.7, 1] }}
-              style={{
-                left: config.masterPosition.left,
-                top: config.masterPosition.top,
-                width: config.masterPosition.size,
-                height: config.masterPosition.size,
-                borderRadius: "50%",
-                background:
-                  "radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(220,240,255,0.5) 40%, rgba(255,255,255,0) 70%)",
-                mixBlendMode: "screen",
-                filter: "blur(4px)",
-              }}
-            />
-            {/* 3 konzentrische Wellen - starten versetzt, expandieren nach aussen */}
-            {[0, 0.35, 0.7].map((delay, i) => (
-              <motion.div
-                key={`pulse-ring-${i}`}
-                aria-hidden="true"
-                className="absolute z-24 pointer-events-none"
-                initial={{ opacity: 0, scale: 0.5, x: "-50%", y: "-50%" }}
-                animate={{
-                  opacity: [0, 0.75, 0.5, 0],
-                  scale: [0.5, 2.5, 5.5, 9],
-                  x: "-50%",
-                  y: "-50%",
-                }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  duration: 1.6,
-                  delay,
-                  ease: [0.25, 0.46, 0.45, 0.94],
-                  times: [0, 0.2, 0.55, 1],
-                }}
-                style={{
-                  left: config.masterPosition.left,
-                  top: config.masterPosition.top,
-                  width: config.masterPosition.size,
-                  height: config.masterPosition.size,
-                  borderRadius: "50%",
-                  // Duenner heller Ring - transparent Kern, heller Rand.
-                  // Die Ringe folgen der Wasserflaeche (leicht gestaucht).
-                  background:
-                    "radial-gradient(circle, rgba(255,255,255,0) 42%, rgba(255,255,255,0.15) 48%, rgba(230,245,255,0.85) 51%, rgba(255,255,255,0.15) 54%, rgba(255,255,255,0) 60%)",
-                  mixBlendMode: "screen",
-                  filter: "blur(2px)",
-                  // Wasser-Wellen sind leicht elliptisch durch Perspektive.
-                  transform: "translate(-50%, -50%) scaleY(0.85)",
-                }}
-              />
-            ))}
-          </>
+          <motion.div
+            key="transition-fade"
+            aria-hidden="true"
+            className="absolute inset-0 z-30 pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.6, 0.95, 0.95, 0.6, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 2.5, ease: "easeInOut", times: [0, 0.24, 0.44, 0.56, 0.8, 1] }}
+            style={{
+              // Radialer Gradient startet am Master-Orb (32.2%/48.8%) und
+              // waechst gleichmaessig nach aussen. Fuellend weiß, warm getont.
+              background:
+                "radial-gradient(circle at 32.2% 48.8%, rgba(255,253,245,1) 0%, rgba(255,250,235,0.98) 30%, rgba(255,245,225,0.95) 55%, rgba(250,240,220,0.9) 80%, rgba(245,235,215,0.85) 100%)",
+            }}
+          />
         )}
       </AnimatePresence>
 
@@ -430,20 +477,36 @@ export function PondExperience() {
                 onClick={() => onProjectClick(project)}
                 aria-label={`${project.title} — ${project.platform}`}
                 className="focus-ring absolute cursor-pointer"
-                initial={{ opacity: 0, left: "32.3%", top: "47.8%", scale: 0.1, x: "-50%", y: "-50%" }}
+                // Kugeln steigen AUS DEM WASSER auf: starten unter dem Blatt
+                // (top +8%), mit scale 0 und rise-Effekt. Wenn im Ruhezustand:
+                // subtiles Schaukeln synchron mit Wasserwellen.
+                initial={{ opacity: 0, left: `${pos.x}%`, top: `${pos.y + 12}%`, scale: 0.1, x: "-50%", y: "-50%" }}
                 animate={{
                   opacity: 1,
                   left: `${pos.x}%`,
-                  top: `${pos.y}%`,
+                  top: isFocused
+                    ? `${pos.y}%`
+                    : [`${pos.y}%`, `${pos.y - 0.4}%`, `${pos.y + 0.3}%`, `${pos.y}%`],
                   x: "-50%",
                   y: "-50%",
                   scale: isFocused ? pos.scale * 1.2 : pos.scale,
                 }}
                 exit={{ opacity: 0, scale: 0.1, x: "-50%", y: "-50%" }}
                 transition={{
-                  duration: phase === "distributed" && !isFocused ? 0.4 : 0.3,
-                  delay: 0,
-                  ease: "easeOut",
+                  // Aufsteigen dauert 900ms mit staggered delay pro Kugel (idx)
+                  duration: isFocused ? 0.35 : 0.9,
+                  delay: isFocused ? 0 : idx * 0.08,
+                  ease: [0.16, 1, 0.3, 1],
+                  // Nach dem Aufstieg: sanftes Schaukeln (endless loop)
+                  top: isFocused
+                    ? { duration: 0.35 }
+                    : {
+                        duration: 4 + idx * 0.3,
+                        delay: 1 + idx * 0.08,
+                        repeat: Infinity,
+                        repeatType: "loop" as const,
+                        ease: "easeInOut",
+                      },
                 }}
                 style={{
                   // Doppelt so gross wie vorher (80-160 -> 160-320) - Kugeln wie der Master.
