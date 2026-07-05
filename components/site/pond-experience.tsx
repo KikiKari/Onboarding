@@ -48,28 +48,26 @@ interface OrbPosition {
  * (dort wo der Master war).
  */
 const POND_CONFIG = {
-  hero: "/media/hero-v2/videos/pond-idle-v2.mp4",
-  splash: "/media/hero-v2/videos/rolling-splash-v3.mp4",
-  // Master-Orb auf dem LINKEN Blatt (Video pond-idle-v2, 1280x720 ausgemessen):
-  // Kugel-Zentrum bei 32% x / 57.6% y. Kugel-Durchmesser ~12.5vw.
-  masterPosition: { left: "32%", top: "57.6%", size: "clamp(150px, 12vw, 210px)" },
-  // 9 Kugeln in 3D-Perspektive auf dem RECHTEN Blatt (v2).
-  // Rechtes Blatt: x 58-92%, y 53-81%. Zentrum (75, 67).
-  // Alle Kugeln bleiben INNERHALB y 58-70% - kein Ueberhang am unteren Blattrand.
-  // Kamera-Perspektive: hinten klein/hoch, vorne gross/tief - alle sicher im Blatt.
+  hero: "/media/hero-v2/videos/pond-idle-v3.mp4",
+  splash: "/media/hero-v2/videos/rolling-splash-v5.mp4",
+  // Master-Orb auf dem LINKEN Blatt (Video pond-idle-v3, aus 1280x720 ausgemessen):
+  // Kugel-Zentrum bei 30.5% x / 55.6% y. Kugel-Durchmesser ~8.6vw.
+  masterPosition: { left: "30.5%", top: "55.6%", size: "clamp(120px, 9vw, 170px)" },
+  // 9 Kugeln auf dem RECHTEN Blatt (v3): x 49-79%, y 44-75%, Zentrum (64, 60).
+  // 3D-Perspektive: hinten klein/hoch, vorne gross/tief. Enger als Blatt-Grenzen.
   orbLayout: [
-    // HINTEN (y 59, klein)
-    { x: 69.0, y: 58.5, scale: 0.20, z: 2 },
-    { x: 76.0, y: 58.0, scale: 0.22, z: 3 },
-    { x: 83.0, y: 59.0, scale: 0.20, z: 2 },
-    // MITTE (y 63-64, mittelgross)
-    { x: 66.5, y: 63.5, scale: 0.26, z: 4 },
-    { x: 74.0, y: 63.0, scale: 0.30, z: 5 },
-    { x: 81.5, y: 63.5, scale: 0.25, z: 4 },
-    // VORNE (y 68-69, gross - noch VOR dem Blattrand)
-    { x: 69.0, y: 68.5, scale: 0.32, z: 6 },
-    { x: 76.0, y: 69.0, scale: 0.36, z: 8 },
-    { x: 83.0, y: 68.0, scale: 0.30, z: 6 },
+    // HINTEN (klein)
+    { x: 55.0, y: 50.0, scale: 0.22, z: 2 },
+    { x: 64.0, y: 48.5, scale: 0.24, z: 3 },
+    { x: 72.5, y: 50.5, scale: 0.22, z: 2 },
+    // MITTE (mittel)
+    { x: 53.0, y: 58.0, scale: 0.30, z: 4 },
+    { x: 63.0, y: 57.0, scale: 0.34, z: 5 },
+    { x: 74.0, y: 58.5, scale: 0.28, z: 4 },
+    // VORNE (gross)
+    { x: 55.5, y: 66.0, scale: 0.36, z: 6 },
+    { x: 64.5, y: 68.0, scale: 0.42, z: 8 },
+    { x: 74.5, y: 65.5, scale: 0.34, z: 6 },
   ] as OrbPosition[],
 } as const;
 
@@ -93,7 +91,6 @@ export function PondExperience() {
   const [heroOpacity, setHeroOpacity] = useState(1);
   const [masterHovered, setMasterHovered] = useState(false);
   const [splashActive, setSplashActive] = useState(false);
-  const [lightBurst, setLightBurst] = useState(false);
   const splashVideoRef = useRef<HTMLVideoElement>(null);
   const clickSplashRef = useRef<HTMLVideoElement>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -153,23 +150,20 @@ export function PondExperience() {
     // 5000ms:  Splash-Video zu Ende, faded aus
     // 5300ms:  9 Kugeln steigen aus dem Wasser auf
 
-    setLightBurst(true);
+    // Splash-Video startet DIREKT beim Klick. Es zeigt die rollende Kugel und
+    // den Wasserspritzer im gleichen Look wie das Idle-Video. Keine CSS-Overlays,
+    // keine Blenden, keine Effekte darueber - das Video macht den Uebergang.
     setPhase("splashing");
+    setSplashActive(true);
+    requestAnimationFrame(() => {
+      splashVideoRef.current?.play().catch(() => {});
+    });
 
-    // Splash-Video startet WAEHREND die Blende noch weiss ist (Uebergang komplett verdeckt)
-    const t1 = setTimeout(() => {
-      setSplashActive(true);
-      requestAnimationFrame(() => {
-        splashVideoRef.current?.play().catch(() => {});
-      });
-    }, 600);
+    // Kugeln steigen NACH dem Splash-Video-Ende aus dem Wasser auf.
+    const t1 = setTimeout(() => setPhase("distributed"), 5000);
+    const t2 = setTimeout(() => setSplashActive(false), 5000);
 
-    const t2 = setTimeout(() => setLightBurst(false), 2500);
-    // Kugeln erscheinen NACHDEM das Splash-Video zu Ende ist
-    const t3 = setTimeout(() => setPhase("distributed"), 5000);
-    const t4 = setTimeout(() => setSplashActive(false), 5000);
-
-    timersRef.current.push(t1, t2, t3, t4);
+    timersRef.current.push(t1, t2);
   }
 
   // Projekt-Kugel klicken → Vollbild-Splash → Weiterleitung
@@ -292,24 +286,8 @@ export function PondExperience() {
               transformOrigin: "center center",
             }}
           >
-            {/* Master-Orb-Button: Hitbox mit sichtbarem Hover-Glow-Ring.
-                Die im Idle-Video eingebettete Kugel bleibt visuell sichtbar.
-                Ein warmer Ring erscheint beim Hover als visueller Hinweis. */}
-            <motion.span
-              aria-hidden="true"
-              initial={false}
-              animate={{ opacity: masterHovered ? 1 : 0 }}
-              transition={{ duration: 0.3 }}
-              style={{
-                position: "absolute",
-                inset: "-15%",
-                borderRadius: "50%",
-                background:
-                  "radial-gradient(circle, rgba(255,255,255,0) 42%, rgba(255,245,220,0.5) 52%, rgba(255,220,180,0.25) 62%, rgba(255,255,255,0) 78%)",
-                filter: "blur(6px)",
-                pointerEvents: "none",
-              }}
-            />
+            {/* KEIN Hover-Glow-Ring mehr. Hover wird nur durch Scale 1.15 sichtbar
+                gemacht (Master-Button waechst leicht). */}
             <span className="sr-only" style={{ pointerEvents: "none" }}>
               {heroPond.masterLink.label}
             </span>
@@ -317,34 +295,8 @@ export function PondExperience() {
         )}
       </AnimatePresence>
 
-      {/* LAYER 4b: Klick-Uebergang - ganzflaechige weiche Weissblende die
-          den kompletten Video-Wechsel ueberdeckt. Aus dem Orb aufsteigend,
-          fuellt kurz den ganzen Screen, ebbt dann wieder ab.
-
-          Ablauf (2.5s):
-          -   0ms: Weißblende beginnt aus dem Orb-Zentrum zu waschen
-          - 600ms: Screen ist ~85% weiß, Splash-Video startet DAHINTER
-          - 1400ms: Blende faded langsam runter (Rolling-Kugel wird sichtbar)
-          - 2500ms: Blende weg, Splash-Video komplett zu sehen */}
-      <AnimatePresence>
-        {lightBurst && (
-          <motion.div
-            key="transition-fade"
-            aria-hidden="true"
-            className="absolute inset-0 z-30 pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.6, 0.95, 0.95, 0.6, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 2.5, ease: "easeInOut", times: [0, 0.24, 0.44, 0.56, 0.8, 1] }}
-            style={{
-              // Radialer Gradient startet am Master-Orb (32.2%/48.8%) und
-              // waechst gleichmaessig nach aussen. Fuellend weiß, warm getont.
-              background:
-                "radial-gradient(circle at 32% 57.6%, rgba(255,253,245,1) 0%, rgba(255,250,235,0.98) 30%, rgba(255,245,225,0.95) 55%, rgba(250,240,220,0.9) 80%, rgba(245,235,215,0.85) 100%)",
-            }}
-          />
-        )}
-      </AnimatePresence>
+      {/* KEIN CSS-Uebergangseffekt. Das Splash-Video macht den Uebergang komplett
+          in sich selbst - Kugel rollt, spritzt, landet - gleicher Look wie Idle. */}
 
       {/* LAYER 5: Master-Hover-Preview-Card (rechts der Master-Orb) */}
       <AnimatePresence>
@@ -405,23 +357,37 @@ export function PondExperience() {
                 onClick={() => onProjectClick(project)}
                 aria-label={`${project.title} — ${project.platform}`}
                 className="focus-ring absolute cursor-pointer"
-                // Kugeln steigen einmalig AUS DEM WASSER auf und bleiben dann
-                // still liegen. Keine Idle-Animation - stoerte die Sicht auf
-                // die Wasserbewegung im Video dahinter.
-                initial={{ opacity: 0, left: `${pos.x}%`, top: `${pos.y + 10}%`, scale: 0.1, x: "-50%", y: "-50%" }}
+                // Kugeln steigen aus dem Wasser auf (top+10% -> top+0%),
+                // versetzte Starts pro Kugel. Danach subtile Wasser-Wiegen-
+                // Bewegung: minimal 0.3-0.5% um die Ruheposition, im Rhythmus
+                // der Wasserwellen (4-6s pro Kugel individuell). Nutzt y-
+                // Transform statt top - keine Layout-Rekalkulation, keine
+                // Video-Ueberlagerung, weiche synchrone Bewegung.
+                initial={{ opacity: 0, left: `${pos.x}%`, top: `${pos.y + 10}%`, scale: 0.05, x: "-50%", y: "-50%" }}
                 animate={{
                   opacity: 1,
                   left: `${pos.x}%`,
                   top: `${pos.y}%`,
                   x: "-50%",
-                  y: "-50%",
+                  y: isFocused
+                    ? "-50%"
+                    : ["-50%", "-52%", "-49%", "-51%", "-50%"],
                   scale: isFocused ? pos.scale * 1.2 : pos.scale,
                 }}
-                exit={{ opacity: 0, scale: 0.1, x: "-50%", y: "-50%" }}
+                exit={{ opacity: 0, scale: 0.05, x: "-50%", y: "-50%" }}
                 transition={{
                   duration: isFocused ? 0.35 : 0.9,
-                  delay: isFocused ? 0 : idx * 0.08,
+                  delay: isFocused ? 0 : idx * 0.12,
                   ease: [0.16, 1, 0.3, 1],
+                  y: isFocused
+                    ? { duration: 0.35 }
+                    : {
+                        duration: 5 + idx * 0.4,
+                        delay: 1.2 + idx * 0.12,
+                        repeat: Infinity,
+                        repeatType: "loop" as const,
+                        ease: "easeInOut",
+                      },
                 }}
                 style={{
                   // Doppelt so gross wie vorher (80-160 -> 160-320) - Kugeln wie der Master.
