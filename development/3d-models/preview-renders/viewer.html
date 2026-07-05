@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><title>3D-Modell-Sichtung</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+<style>
+  :root { --bg:#0a0a0a; --card:#1a1a1a; --line:#333; --accent:#c77d2e; --ink:#eee; --muted:#888; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 2rem; background: var(--bg); color: var(--ink); font-family: -apple-system, sans-serif; }
+  h1 { font-family: Georgia, serif; font-weight: 400; margin-bottom: 0.3rem; }
+  p.sub { color: var(--muted); margin-top: 0; margin-bottom: 2rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  model-viewer { width: 100%; height: 320px; background: linear-gradient(135deg,#1B1A17 0%,#2a2825 100%); }
+  .meta { padding: 0.9rem 1rem 1rem; }
+  .name { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-size: 0.875rem; font-weight: 600; }
+  .desc { font-size: 0.8125rem; color: var(--muted); margin-top: 0.4rem; }
+  .controls { font-size: 0.7rem; color: #555; margin-top: 0.6rem; font-family: monospace; }
+</style>
+</head><body>
+<h1>3D-Modell-Sichtung — 5 Objekte aus Tripo3D H3.1</h1>
+<p class="sub">Klick + Ziehen zum Rotieren, Scrollrad zum Zoomen. Auto-Rotate ist aktiv.</p>
+
+<div class="grid">
+  <div class="card">
+    <model-viewer src="http://localhost:8899/glb-output/bluete_weiss.glb"
+      environment-image="neutral" exposure="1.2" shadow-intensity="1"
+      camera-controls auto-rotate camera-orbit="45deg 75deg 100%"></model-viewer>
+    <div class="meta">
+      <div class="name">bluete_weiss.glb</div>
+      <div class="desc">Basis: comp_01_peonies_dark.png (Pfingstrosen-Komposition)</div>
+      <div class="controls">55 MB · texture: detailed · geometry: detailed</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <model-viewer src="http://localhost:8899/glb-output/bluete_lotus.glb"
+      environment-image="neutral" exposure="1.2" shadow-intensity="1"
+      camera-controls auto-rotate camera-orbit="45deg 75deg 100%"></model-viewer>
+    <div class="meta">
+      <div class="name">bluete_lotus.glb</div>
+      <div class="desc">Basis: 78370994.webp (weiße Lotusblüte)</div>
+      <div class="controls">55 MB</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <model-viewer src="http://localhost:8899/glb-output/bluete_rosa.glb"
+      environment-image="neutral" exposure="1.2" shadow-intensity="1"
+      camera-controls auto-rotate camera-orbit="45deg 75deg 100%"></model-viewer>
+    <div class="meta">
+      <div class="name">bluete_rosa.glb</div>
+      <div class="desc">Basis: 70017289.webp (rosa Seerose)</div>
+      <div class="controls">55 MB</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <model-viewer src="http://localhost:8899/glb-output/blatt_1.glb"
+      environment-image="neutral" exposure="1.2" shadow-intensity="1"
+      camera-controls auto-rotate camera-orbit="45deg 75deg 100%"></model-viewer>
+    <div class="meta">
+      <div class="name">blatt_1.glb</div>
+      <div class="desc">Basis: 12130585.webp (Lotusblatt Clipping-Path)</div>
+      <div class="controls">55 MB</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <model-viewer src="http://localhost:8899/glb-output/blatt_2.glb"
+      environment-image="neutral" exposure="1.2" shadow-intensity="1"
+      camera-controls auto-rotate camera-orbit="45deg 75deg 100%"></model-viewer>
+    <div class="meta">
+      <div class="name">blatt_2.glb</div>
+      <div class="desc">Basis: 48178242.webp (Seerosenblätter mit Kanten)</div>
+      <div class="controls">55 MB</div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:2rem;color:var(--muted);font-size:0.8125rem">
+Der lokale HTTP-Server läuft auf http://localhost:8899. Damit du den Viewer außerhalb dieser Sandbox sehen kannst, muss ich dir eine standalone-Version bauen (Assets inline via base64 → aber 5×55 MB = 275 MB HTML, zu groß). Ich schicke stattdessen die 6 GLB-Dateien plus die statischen Screenshots zum Download.
+</p>
+</body></html>
