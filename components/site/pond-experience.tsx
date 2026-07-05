@@ -53,19 +53,23 @@ const POND_CONFIG = {
   // Master-Orb auf dem LINKEN Blatt - aus HD-Screenshot exakt gemessen:
   // Kugel-Zentrum bei 31.7% x / 48.8% y im 16:9 Stage.
   masterPosition: { left: "32.2%", top: "48.8%", size: "clamp(170px, 14vw, 230px)" },
-  // 9 grosse Kugeln unregelmäßig auf dem RECHTEN Blatt verteilt.
-  // Ellipse Zentrum (73.3, 58), Halbachsen (17, 12.5) - alle Kugeln 100% DRAUF.
-  // Mit groesserem Mindestabstand: keine Kugel-Ueberlappung mehr.
+  // 9 Kugeln in 3D-Perspektive auf dem RECHTEN Blatt.
+  // Kamera schaut leicht von oben - hintere Kugeln (kleiner y) sind kleiner &
+  // dichter am Horizont, vordere (groesserer y) sind gross und deutlich vorne.
+  // Drei Reihen: hinten/mitte/vorne, jede mit natuerlicher x-Streuung.
   orbLayout: [
-    { x: 70.5, y: 50.2, scale: 0.30, z: 2 },
-    { x: 76.5, y: 54.4, scale: 0.34, z: 3 },
-    { x: 88.4, y: 55.3, scale: 0.32, z: 2 },
-    { x: 64.5, y: 58.1, scale: 0.38, z: 4 },
-    { x: 57.1, y: 58.1, scale: 0.42, z: 5 },
-    { x: 75.2, y: 61.4, scale: 0.36, z: 4 },
-    { x: 68.9, y: 65.4, scale: 0.46, z: 6 },
-    { x: 84.9, y: 66.3, scale: 0.40, z: 5 },
-    { x: 61.7, y: 66.4, scale: 0.50, z: 7 },
+    // HINTEN (klein, hoch am Blatt) - wirken durch die Perspektive weiter weg
+    { x: 66.0, y: 47.0, scale: 0.25, z: 2 },
+    { x: 74.0, y: 46.0, scale: 0.28, z: 3 },
+    { x: 82.0, y: 47.5, scale: 0.26, z: 2 },
+    // MITTE (mittelgross)
+    { x: 63.0, y: 57.0, scale: 0.36, z: 4 },
+    { x: 73.0, y: 56.0, scale: 0.42, z: 5 },
+    { x: 85.0, y: 58.0, scale: 0.34, z: 4 },
+    // VORNE (gross, tief am Blatt) - dominant im Sichtfeld
+    { x: 66.5, y: 66.0, scale: 0.50, z: 6 },
+    { x: 76.0, y: 68.0, scale: 0.60, z: 8 },
+    { x: 86.0, y: 65.0, scale: 0.48, z: 6 },
   ] as OrbPosition[],
 } as const;
 
@@ -141,12 +145,14 @@ export function PondExperience() {
 
     setMasterHovered(false);
 
-    // Story-Flow mit aufbauendem Wolken-Lichteffekt:
-    //   0ms:    Wolkiger Lichtschein steigt sanft aus dem Orb, wachst schichtweise
-    //  900ms:  Wolke ist voll ausgebreitet, Splash-Video startet dahinter
-    // 2000ms:  Wolke faded aus, Rolling im Video uebernimmt
-    // 4600ms:  9 Kugeln beginnen einzublenden
-    // 5400ms:  Splash-Video zu Ende, fadet aus
+    // Story-Flow mit Wasserwellen-Puls beim Klick:
+    //   0ms:    Erste Welle startet, zentrales Highlight leuchtet auf
+    //  350ms:  Zweite Welle startet
+    //  700ms:  Dritte Welle startet
+    // 1100ms:  Splash-Video startet dahinter (Wellen noch aktiv)
+    // 2300ms:  Letzte Welle faded aus
+    // 5000ms:  9 Kugeln beginnen einzublenden
+    // 5800ms:  Splash-Video zu Ende, fadet aus
 
     setLightBurst(true);
     setPhase("splashing");
@@ -156,11 +162,11 @@ export function PondExperience() {
       requestAnimationFrame(() => {
         splashVideoRef.current?.play().catch(() => {});
       });
-    }, 900);
+    }, 1100);
 
-    const t2 = setTimeout(() => setLightBurst(false), 2000);
-    const t3 = setTimeout(() => setPhase("distributed"), 4600);
-    const t4 = setTimeout(() => setSplashActive(false), 5400);
+    const t2 = setTimeout(() => setLightBurst(false), 2400);
+    const t3 = setTimeout(() => setPhase("distributed"), 5000);
+    const t4 = setTimeout(() => setSplashActive(false), 5800);
 
     timersRef.current.push(t1, t2, t3, t4);
   }
@@ -291,27 +297,27 @@ export function PondExperience() {
         )}
       </AnimatePresence>
 
-      {/* LAYER 4b: Wolken-Lichteffekt beim Klick - drei ueberlagerte Schichten
-          steigen aus dem Orb auf und breiten sich aus (2s Gesamtdauer).
-          Kernkugel + mittlere Wolke + weiter Nebel-Halo, jede mit eigenem Timing.
-          Sieht aus wie Dampf/Nebel/Wolke die sich aus dem Orb erhebt. */}
+      {/* LAYER 4b: Puls-Wellen wie Wasser - konzentrische Lichtringe expandieren
+          aus dem Orb-Zentrum wie Wellen auf einem Teich (2.4s Gesamtdauer).
+          3 Ringe, jeder mit 400ms Versatz gestartet, expandieren nach aussen,
+          werden dabei duenner und faden aus. Zentrales Highlight bleibt sichtbar. */}
       <AnimatePresence>
         {lightBurst && (
           <>
-            {/* Schicht 1: heller Kern - kompakter warmer Kern */}
+            {/* Zentrales Highlight - nur ein leiser Schein am Klickpunkt */}
             <motion.div
-              key="cloud-core"
+              key="pulse-center"
               aria-hidden="true"
               className="absolute z-25 pointer-events-none"
-              initial={{ opacity: 0, scale: 0.3, x: "-50%", y: "-50%" }}
+              initial={{ opacity: 0, scale: 0.4, x: "-50%", y: "-50%" }}
               animate={{
-                opacity: [0, 0.8, 1, 0.9, 0.5, 0],
-                scale: [0.3, 1, 2, 3.5, 6, 9],
+                opacity: [0, 0.9, 0.6, 0.3, 0],
+                scale: [0.4, 0.9, 1.1, 1.3, 1.5],
                 x: "-50%",
                 y: "-50%",
               }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 2, ease: "easeOut", times: [0, 0.15, 0.3, 0.55, 0.8, 1] }}
+              transition={{ duration: 1.2, ease: "easeOut", times: [0, 0.15, 0.4, 0.7, 1] }}
               style={{
                 left: config.masterPosition.left,
                 top: config.masterPosition.top,
@@ -319,63 +325,48 @@ export function PondExperience() {
                 height: config.masterPosition.size,
                 borderRadius: "50%",
                 background:
-                  "radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,250,235,0.98) 15%, rgba(255,235,200,0.85) 35%, rgba(220,235,245,0.5) 60%, rgba(255,255,255,0) 85%)",
+                  "radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(220,240,255,0.5) 40%, rgba(255,255,255,0) 70%)",
                 mixBlendMode: "screen",
-                filter: "blur(3px)",
+                filter: "blur(4px)",
               }}
             />
-            {/* Schicht 2: mittlere Wolke - waechst spaeter, breiter, weicher */}
-            <motion.div
-              key="cloud-mid"
-              aria-hidden="true"
-              className="absolute z-24 pointer-events-none"
-              initial={{ opacity: 0, scale: 0.5, x: "-50%", y: "-40%" }}
-              animate={{
-                opacity: [0, 0, 0.7, 0.9, 0.5, 0],
-                scale: [0.5, 1.5, 3, 5, 8, 13],
-                x: "-50%",
-                y: ["-40%", "-45%", "-55%", "-65%", "-75%", "-90%"],
-              }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 2, ease: [0.22, 1, 0.36, 1], times: [0, 0.15, 0.35, 0.55, 0.8, 1] }}
-              style={{
-                left: config.masterPosition.left,
-                top: config.masterPosition.top,
-                width: config.masterPosition.size,
-                height: config.masterPosition.size,
-                borderRadius: "50%",
-                background:
-                  "radial-gradient(ellipse at 50% 60%, rgba(255,245,220,0.85) 0%, rgba(255,225,180,0.55) 30%, rgba(200,220,240,0.35) 60%, rgba(255,255,255,0) 82%)",
-                mixBlendMode: "screen",
-                filter: "blur(12px)",
-              }}
-            />
-            {/* Schicht 3: weiter Nebelhalo - langsam wachsend, sehr diffus */}
-            <motion.div
-              key="cloud-halo"
-              aria-hidden="true"
-              className="absolute z-23 pointer-events-none"
-              initial={{ opacity: 0, scale: 0.8, x: "-50%", y: "-50%" }}
-              animate={{
-                opacity: [0, 0, 0.4, 0.6, 0.35, 0],
-                scale: [0.8, 2, 4, 7, 12, 20],
-                x: "-50%",
-                y: "-50%",
-              }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 2, ease: "easeOut", times: [0, 0.2, 0.45, 0.65, 0.85, 1] }}
-              style={{
-                left: config.masterPosition.left,
-                top: config.masterPosition.top,
-                width: config.masterPosition.size,
-                height: config.masterPosition.size,
-                borderRadius: "50%",
-                background:
-                  "radial-gradient(circle, rgba(255,240,215,0.5) 0%, rgba(230,225,240,0.35) 40%, rgba(255,255,255,0) 75%)",
-                mixBlendMode: "screen",
-                filter: "blur(24px)",
-              }}
-            />
+            {/* 3 konzentrische Wellen - starten versetzt, expandieren nach aussen */}
+            {[0, 0.35, 0.7].map((delay, i) => (
+              <motion.div
+                key={`pulse-ring-${i}`}
+                aria-hidden="true"
+                className="absolute z-24 pointer-events-none"
+                initial={{ opacity: 0, scale: 0.5, x: "-50%", y: "-50%" }}
+                animate={{
+                  opacity: [0, 0.75, 0.5, 0],
+                  scale: [0.5, 2.5, 5.5, 9],
+                  x: "-50%",
+                  y: "-50%",
+                }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  duration: 1.6,
+                  delay,
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                  times: [0, 0.2, 0.55, 1],
+                }}
+                style={{
+                  left: config.masterPosition.left,
+                  top: config.masterPosition.top,
+                  width: config.masterPosition.size,
+                  height: config.masterPosition.size,
+                  borderRadius: "50%",
+                  // Duenner heller Ring - transparent Kern, heller Rand.
+                  // Die Ringe folgen der Wasserflaeche (leicht gestaucht).
+                  background:
+                    "radial-gradient(circle, rgba(255,255,255,0) 42%, rgba(255,255,255,0.15) 48%, rgba(230,245,255,0.85) 51%, rgba(255,255,255,0.15) 54%, rgba(255,255,255,0) 60%)",
+                  mixBlendMode: "screen",
+                  filter: "blur(2px)",
+                  // Wasser-Wellen sind leicht elliptisch durch Perspektive.
+                  transform: "translate(-50%, -50%) scaleY(0.85)",
+                }}
+              />
+            ))}
           </>
         )}
       </AnimatePresence>
