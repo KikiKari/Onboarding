@@ -45,22 +45,26 @@ const ORB_FILES = [
   "orb-09-ivory.png",
 ];
 
+/**
+ * 9 Kugel-Positionen (x/y in %) so verteilt dass 4 auf dem linken Blatt,
+ * 4 auf dem rechten Blatt liegen und 1 zwischen den Blättern.
+ * Positionen orientiert an den zwei Blättern im Sora-Video pond-loop.mp4.
+ */
 function buildOrbLayout(): OrbPosition[] {
-  const positions: OrbPosition[] = [];
-  const centerX = 50;
-  const centerY = 55;
-  const radiusX = 32;
-  const radiusY = 20;
-  for (let i = 0; i < 9; i++) {
-    const angle = (i / 9) * Math.PI * 2 - Math.PI / 2;
-    const x = centerX + Math.cos(angle) * radiusX;
-    const y = centerY + Math.sin(angle) * radiusY;
-    const depthFactor = (y - centerY) / radiusY;
-    const scale = 0.7 + 0.4 * (depthFactor + 1) / 2;
-    const z = Math.round(depthFactor * 10);
-    positions.push({ x, y, scale, z });
-  }
-  return positions;
+  return [
+    // Linkes Blatt (~30-45% x, 55-75% y)
+    { x: 28, y: 62, scale: 0.9, z: 2 },
+    { x: 36, y: 58, scale: 0.85, z: 3 },
+    { x: 32, y: 70, scale: 1.0, z: 5 },
+    { x: 40, y: 72, scale: 0.95, z: 4 },
+    // Mitte (auf Wasser zwischen Blättern)
+    { x: 50, y: 78, scale: 1.1, z: 6 },
+    // Rechtes Blatt (~55-70% x, 55-75% y)
+    { x: 60, y: 58, scale: 0.85, z: 3 },
+    { x: 68, y: 62, scale: 0.9, z: 2 },
+    { x: 65, y: 72, scale: 1.0, z: 5 },
+    { x: 72, y: 68, scale: 0.9, z: 3 },
+  ];
 }
 
 export function PondExperience() {
@@ -194,19 +198,27 @@ export function PondExperience() {
             onFocus={startSequence}
             aria-label={heroPond.masterLink.label}
             className="focus-ring absolute z-20 cursor-pointer"
-            initial={{ opacity: 0, x: "-15vw", y: "0vh", rotate: 0 }}
+            initial={{ opacity: 0, x: 0, y: 0, rotate: 0 }}
             animate={
               phase === "idle"
-                ? { opacity: 1, x: "-15vw", y: "0vh", rotate: 0, scale: 1 }
-                : { opacity: 0, x: "0vw", y: "10vh", rotate: 720, scale: 0.3 }
+                ? { opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 }
+                : {
+                    // Rollt zum Splash-Punkt (Mitte-unten) und schrumpft
+                    opacity: 0,
+                    x: "18vw",
+                    y: "10vh",
+                    rotate: 720,
+                    scale: 0.3,
+                  }
             }
             exit={{ opacity: 0, scale: 0.1 }}
             transition={{ duration: phase === "rolling" ? 1.2 : 0.6, ease: "easeInOut" }}
             style={{
-              left: "50%",
-              top: "45%",
-              width: "clamp(220px, 28vw, 480px)",
-              height: "clamp(220px, 28vw, 480px)",
+              // Master-Orb liegt auf dem LINKEN Blätt im Video (~34% x, 65% y)
+              left: "34%",
+              top: "65%",
+              width: "clamp(180px, 22vw, 380px)",
+              height: "clamp(180px, 22vw, 380px)",
               transform: "translate(-50%, -50%)",
               background: "transparent",
               border: "none",
@@ -250,9 +262,10 @@ export function PondExperience() {
                 aria-label={`${project.title} — ${project.platform}`}
                 className="focus-ring absolute cursor-pointer"
                 initial={{
+                  // Kugeln entstehen aus dem Splash-Punkt (Mitte, wo Master gelandet ist)
                   opacity: 0,
                   left: "50%",
-                  top: "60%",
+                  top: "75%",
                   scale: 0.1,
                 }}
                 animate={{
