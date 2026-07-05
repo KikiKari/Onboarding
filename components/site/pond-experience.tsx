@@ -51,19 +51,20 @@ const POND_CONFIG = {
   hero: "/media/hero-v2/videos/pond-idle-A.mp4",
   splash: "/media/hero-v2/videos/rolling-splash-v3.mp4",
   // Master-Orb auf dem LINKEN Blatt - exakt über der Video-Kugel positioniert
-  // Video-Kugel bei ca. 34% x, 49% y (aus 1280x720 idle-frame ausgemessen)
-  masterPosition: { left: "34%", top: "49%", size: "clamp(140px, 14vw, 220px)" },
-  // 9 Kugeln auf dem RECHTEN Blatt (x ~53-92%, y ~50-80% ausgemessen)
+  // Video-Kugel bei ca. 33.6% x, 47.2% y (aus 1280x720 idle-frame v3 ausgemessen)
+  masterPosition: { left: "34%", top: "47%", size: "clamp(120px, 12vw, 200px)" },
+  // 9 Kugeln auf dem RECHTEN Blatt - Blatt bei x 53-92%, y 51-75%
+  // Kompakt gruppiert auf der Blattfläche, größeres Zentrum, kleinere Ränder
   orbLayout: [
-    { x: 60, y: 55, scale: 0.5, z: 2 },
-    { x: 72, y: 53, scale: 0.55, z: 3 },
-    { x: 84, y: 55, scale: 0.5, z: 2 },
-    { x: 58, y: 63, scale: 0.6, z: 4 },
-    { x: 72, y: 63, scale: 0.7, z: 6 },
-    { x: 86, y: 63, scale: 0.6, z: 4 },
-    { x: 62, y: 72, scale: 0.55, z: 3 },
-    { x: 75, y: 73, scale: 0.65, z: 5 },
-    { x: 87, y: 72, scale: 0.55, z: 3 },
+    { x: 62, y: 56, scale: 0.45, z: 2 },
+    { x: 73, y: 54, scale: 0.5, z: 3 },
+    { x: 84, y: 56, scale: 0.45, z: 2 },
+    { x: 60, y: 63, scale: 0.55, z: 4 },
+    { x: 73, y: 62, scale: 0.6, z: 6 },
+    { x: 86, y: 63, scale: 0.55, z: 4 },
+    { x: 65, y: 70, scale: 0.5, z: 3 },
+    { x: 77, y: 70, scale: 0.55, z: 5 },
+    { x: 87, y: 70, scale: 0.5, z: 3 },
   ] as OrbPosition[],
 } as const;
 
@@ -244,13 +245,9 @@ export function PondExperience() {
             aria-label={heroPond.masterLink.label}
             className="focus-ring absolute z-20 cursor-pointer"
             initial={{ opacity: 0 }}
-            animate={
-              phase === "rolling"
-                ? { opacity: 0, x: "18vw", y: "10vh", rotate: 720, scale: 0.3 }
-                : { opacity: 1, x: 0, y: 0, rotate: 0, scale: masterHovered ? 1.05 : 1 }
-            }
-            exit={{ opacity: 0, scale: 0.1 }}
-            transition={{ duration: phase === "rolling" ? 1.0 : 0.5, ease: "easeInOut" }}
+            animate={{ opacity: 1, scale: masterHovered ? 1.05 : 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
             style={{
               left: config.masterPosition.left,
               top: config.masterPosition.top,
@@ -262,21 +259,12 @@ export function PondExperience() {
               padding: 0,
             }}
           >
-            {/* Master-Orb-Sprite:
-                - Idle/Hover: UNSICHTBAR (die im Video eingebettete Kugel ist sichtbar)
-                - Rolling: SICHTBAR (rollt weg vom Blatt) */}
+            {/* Master-Orb-Button: reine Hitbox für Klick/Hover.
+                Die im Idle-Video eingebettete Kugel bleibt visuell sichtbar.
+                KEIN Rolling-Sprite - das Splash-Video zeigt selbst die rollende Kugel. */}
             <span className="sr-only" style={{ pointerEvents: "none" }}>
               {heroPond.masterLink.label}
             </span>
-            {phase === "rolling" && (
-              <img
-                src="/media/hero-v2/kugeln-v2/master.png"
-                alt=""
-                className="absolute inset-0 h-full w-full object-contain"
-                draggable={false}
-                style={{ pointerEvents: "none" }}
-              />
-            )}
           </motion.button>
         )}
       </AnimatePresence>
