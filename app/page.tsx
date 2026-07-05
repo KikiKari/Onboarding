@@ -5,7 +5,7 @@ import { ContactForm } from "@/components/site/contact-form";
 import { Footer } from "@/components/site/footer";
 import { Header } from "@/components/site/header";
 import { NarrationToggle } from "@/components/site/narration-toggle";
-import { PondHero } from "@/components/site/pond-hero";
+import { PondExperience } from "@/components/site/pond-experience";
 import { ProjectList } from "@/components/site/project-list";
 import { RotatingHeadline } from "@/components/site/rotating-headline";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +41,7 @@ export default function Home() {
             <Reveal delay={0.16} className="flex flex-col items-center gap-5 text-center">
               <p className="m-0 max-w-[56ch] text-[clamp(1rem,1.5vw,1.1875rem)] leading-relaxed text-ink-2">{siteContent.hero.subline}</p>
             </Reveal>
-            <Reveal delay={0.08}><PondHero /></Reveal>
+            <Reveal delay={0.08}><PondExperience /></Reveal>
           </Container>
           <NarrationToggle />
         </Hero>
