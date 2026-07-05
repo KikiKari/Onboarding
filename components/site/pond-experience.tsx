@@ -50,10 +50,9 @@ interface OrbPosition {
 const POND_CONFIG = {
   hero: "/media/hero-v2/videos/pond-idle-A.mp4",
   splash: "/media/hero-v2/videos/rolling-splash-v3.mp4",
-  // Master-Orb auf dem LINKEN Blatt - aus HD-Screenshot (1541x735) exakt gemessen:
-  // Video-Kugel-Zentrum bei 31.5% x / 48.6% y im 16:9 Stage.
-  // Hitbox 180px cap - deckt die volle sichtbare Video-Kugel (Durchmesser ~180px).
-  masterPosition: { left: "31.5%", top: "48.6%", size: "clamp(160px, 13vw, 220px)" },
+  // Master-Orb auf dem LINKEN Blatt - aus HD-Screenshot exakt gemessen:
+  // Kugel-Zentrum bei 31.7% x / 48.8% y im 16:9 Stage.
+  masterPosition: { left: "31.7%", top: "48.8%", size: "clamp(160px, 13vw, 220px)" },
   // 9 grosse Kugeln unregelmäßig auf dem RECHTEN Blatt verteilt (wie Perlen die auf
   // dem Blatt ruhen). Blatt-Grenzen: x 54-92.6%, y 42.2-73.4%.
   // Ellipse Zentrum (73.3, 57.0), Halbachsen (17, 12.5) - alle Kugeln 100% DRAUF.
@@ -144,29 +143,24 @@ export function PondExperience() {
 
     setMasterHovered(false);
 
-    // Story-Flow mit Lichteffekt-Ueberleitung:
-    //   0ms:    Lichtblitz aus dem Orb-Zentrum, expandiert radial
-    //  180ms:  Splash-Video startet unter dem noch fadenden Lichtblitz
-    //  400ms:  Lichtblitz voellig ausgeblendet, nur noch Splash-Video sichtbar
-    // 4200ms:  9 Kugeln beginnen einzublenden (unter noch aktivem Splash)
+    // Story-Flow mit sanftem Fade-Ueberleitung statt schnellem Blitz:
+    //   0ms:    Warm-weisser Lichtschein steigt aus dem Orb, waechst sanft
+    //  400ms:  Splash-Video startet hinter dem Lichtschein
+    // 1200ms:  Lichtschein voellig ausgeblendet, nur noch Splash-Video sichtbar
+    // 4200ms:  9 Kugeln beginnen einzublenden
     // 5000ms:  Splash-Video zu Ende, fadet aus
 
-    // Lichtblitz sofort ausloesen (blendet ueber den Master-Klickpunkt)
     setLightBurst(true);
     setPhase("splashing");
 
-    // Splash-Video parallel starten (waehrend Lichtblitz noch sichtbar ist,
-    // dahinter wird das Video-Rolling bereits ausgeloest)
     const t1 = setTimeout(() => {
       setSplashActive(true);
       requestAnimationFrame(() => {
         splashVideoRef.current?.play().catch(() => {});
       });
-    }, 180);
+    }, 400);
 
-    // Lichtblitz nach 400ms komplett weg
-    const t2 = setTimeout(() => setLightBurst(false), 400);
-
+    const t2 = setTimeout(() => setLightBurst(false), 1200);
     const t3 = setTimeout(() => setPhase("distributed"), 4200);
     const t4 = setTimeout(() => setSplashActive(false), 5000);
 
@@ -299,18 +293,18 @@ export function PondExperience() {
         )}
       </AnimatePresence>
 
-      {/* LAYER 4b: Lichtblitz beim Klick - expandiert radial aus dem Orb-Zentrum
-          und blendet den Uebergang zum Splash-Video ueber (kein sichtbares Ruckeln). */}
+      {/* LAYER 4b: Sanfter Lichtschein beim Klick - waechst langsam aus dem Orb
+          und blendet den Uebergang zum Splash-Video ueber (1.2s Gesamtdauer). */}
       <AnimatePresence>
         {lightBurst && (
           <motion.div
             key="lightburst"
             aria-hidden="true"
             className="absolute z-25 pointer-events-none"
-            initial={{ opacity: 0, scale: 0.3, x: "-50%", y: "-50%" }}
-            animate={{ opacity: [0, 1, 0.9, 0], scale: [0.3, 1.4, 6, 12], x: "-50%", y: "-50%" }}
+            initial={{ opacity: 0, scale: 0.6, x: "-50%", y: "-50%" }}
+            animate={{ opacity: [0, 0.9, 1, 0.7, 0], scale: [0.6, 2, 5, 10, 18], x: "-50%", y: "-50%" }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], times: [0, 0.15, 0.5, 1] }}
+            transition={{ duration: 1.2, ease: "easeOut", times: [0, 0.25, 0.55, 0.8, 1] }}
             style={{
               left: config.masterPosition.left,
               top: config.masterPosition.top,
@@ -318,9 +312,9 @@ export function PondExperience() {
               height: config.masterPosition.size,
               borderRadius: "50%",
               background:
-                "radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,245,220,0.95) 25%, rgba(180,220,240,0.7) 55%, rgba(255,255,255,0) 80%)",
+                "radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,248,225,0.95) 20%, rgba(255,230,180,0.75) 40%, rgba(200,225,240,0.4) 65%, rgba(255,255,255,0) 85%)",
               mixBlendMode: "screen",
-              filter: "blur(2px)",
+              filter: "blur(4px)",
             }}
           />
         )}
