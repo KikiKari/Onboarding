@@ -109,6 +109,15 @@ Für neue Sora-Videos direkt via OpenAI-API (nicht mehr Wrapper) — siehe Skill
 - Codespace-Secrets über GitHub Repo- und Codespaces-Secrets bereitgestellt
 - `pnpm secret:scan` läuft in CI
 
+## Projektkontext (v5)
+
+Die konsolidierte Projektdokumentation liegt unter [`docs/context/`](docs/context/) im Repo:
+
+- [`Projektkontext_v5.md`](docs/context/Projektkontext_v5.md) — aktueller Umsetzungsstand Pond-Hero, offene QA-Punkte, Integrationen, Sicherheit
+- [`Links_und_Erreichbarkeit_v5.md`](docs/context/Links_und_Erreichbarkeit_v5.md) — alle URLs kuratiert in 12 thematischen Sektionen
+
+Beide Dokumente sind die verbindliche Referenz für die weitere Entwicklung mit Perplexity Computer + Claude Fable 5.
+
 ## Verwandte Ressourcen
 
 - **Notion:** [Onboarding and Project Pages](https://app.notion.com/p/3878d8ad3db98116a5d4f68d8c8ad717)
