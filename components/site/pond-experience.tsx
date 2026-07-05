@@ -48,28 +48,27 @@ interface OrbPosition {
  * (dort wo der Master war).
  */
 const POND_CONFIG = {
-  hero: "/media/hero-v2/videos/pond-idle-A.mp4",
+  hero: "/media/hero-v2/videos/pond-idle-v2.mp4",
   splash: "/media/hero-v2/videos/rolling-splash-v3.mp4",
-  // Master-Orb auf dem LINKEN Blatt - aus HD-Screenshot exakt gemessen:
-  // Kugel-Zentrum bei 31.7% x / 48.8% y im 16:9 Stage.
-  masterPosition: { left: "32.2%", top: "48.8%", size: "clamp(170px, 14vw, 230px)" },
-  // 9 Kugeln in 3D-Perspektive auf dem RECHTEN Blatt.
-  // Blatt-Ellipse-Zentrum (73, 58), Halbachsen (14, 10) - enger als Blatt-Grenzen
-  // damit Kugeln WIRKLICH auf Blattflaeche liegen und nicht am Rand haengen.
-  // Kamera-Perspektive: hinten klein, vorne gross, y-abhaengige Skalierung.
+  // Master-Orb auf dem LINKEN Blatt (Video pond-idle-v2, 1280x720 ausgemessen):
+  // Kugel-Zentrum bei 32% x / 57.6% y. Kugel-Durchmesser ~12.5vw.
+  masterPosition: { left: "32%", top: "57.6%", size: "clamp(150px, 12vw, 210px)" },
+  // 9 Kugeln in 3D-Perspektive auf dem RECHTEN Blatt (v2).
+  // Rechtes Blatt: x 58-92%, y 53-81%. Zentrum (75, 67), enger fuer Kugel-Bett.
+  // Kamera-Perspektive: hinten klein, vorne gross.
   orbLayout: [
-    // HINTEN (y 51-53, klein) - wirken durch die Perspektive weiter weg
-    { x: 68.0, y: 51.0, scale: 0.24, z: 2 },
-    { x: 76.0, y: 50.5, scale: 0.26, z: 3 },
-    { x: 82.5, y: 52.0, scale: 0.24, z: 2 },
-    // MITTE (y 57-59, mittelgross)
-    { x: 65.5, y: 58.0, scale: 0.32, z: 4 },
-    { x: 73.5, y: 57.5, scale: 0.36, z: 5 },
-    { x: 81.0, y: 58.5, scale: 0.30, z: 4 },
-    // VORNE (y 63-66, gross) - dominant im Sichtfeld
-    { x: 68.0, y: 64.0, scale: 0.42, z: 6 },
-    { x: 76.0, y: 65.5, scale: 0.48, z: 8 },
-    { x: 83.0, y: 63.5, scale: 0.40, z: 6 },
+    // HINTEN (y 58-59, klein)
+    { x: 69.0, y: 58.0, scale: 0.22, z: 2 },
+    { x: 77.0, y: 57.5, scale: 0.24, z: 3 },
+    { x: 84.0, y: 59.0, scale: 0.22, z: 2 },
+    // MITTE (y 65-67, mittelgross)
+    { x: 66.0, y: 66.5, scale: 0.30, z: 4 },
+    { x: 74.5, y: 66.0, scale: 0.34, z: 5 },
+    { x: 82.5, y: 66.5, scale: 0.28, z: 4 },
+    // VORNE (y 72-75, gross)
+    { x: 68.5, y: 73.0, scale: 0.40, z: 6 },
+    { x: 76.5, y: 74.0, scale: 0.46, z: 8 },
+    { x: 84.0, y: 72.5, scale: 0.38, z: 6 },
   ] as OrbPosition[],
 } as const;
 
@@ -412,7 +411,7 @@ export function PondExperience() {
               // Radialer Gradient startet am Master-Orb (32.2%/48.8%) und
               // waechst gleichmaessig nach aussen. Fuellend weiß, warm getont.
               background:
-                "radial-gradient(circle at 32.2% 48.8%, rgba(255,253,245,1) 0%, rgba(255,250,235,0.98) 30%, rgba(255,245,225,0.95) 55%, rgba(250,240,220,0.9) 80%, rgba(245,235,215,0.85) 100%)",
+                "radial-gradient(circle at 32% 57.6%, rgba(255,253,245,1) 0%, rgba(255,250,235,0.98) 30%, rgba(255,245,225,0.95) 55%, rgba(250,240,220,0.9) 80%, rgba(245,235,215,0.85) 100%)",
             }}
           />
         )}
