@@ -67,24 +67,28 @@ export function ProjectList() {
                       {project.platform}
                     </span>
                   </span>
-                  {/* Connecting line with the gliding marker orb. */}
-                  <span className="relative hidden h-3 items-center sm:flex">
+                  {/* Connecting line with the gliding marker orb (schwarze Glaskugel). */}
+                  <span className="relative hidden h-6 items-center sm:flex">
                     <span
                       className="h-px w-full"
                       style={{ background: "var(--line)" }}
                     />
                     <motion.span
                       aria-hidden="true"
-                      className="absolute top-1/2 size-3 -translate-y-1/2 rounded-full"
-                      style={{
-                        background: `radial-gradient(circle at 32% 28%, #ffffff, ${accent})`,
-                        boxShadow: `0 1px 6px -1px ${accent}, inset 0 0 4px rgba(255,255,255,.8)`,
-                        left: 0,
-                      }}
+                      className="absolute top-1/2 size-6 -translate-y-1/2"
+                      style={{ left: 0 }}
                       initial={false}
                       animate={{ left: isHover ? "100%" : "0%", x: isHover ? "-100%" : "0%" }}
                       transition={{ duration: 0.6, ease: [0.22, 0.61, 0.36, 1] }}
-                    />
+                    >
+                      <Image
+                        src="/media/hero-v2/markers/orb-marker-black.png"
+                        alt=""
+                        width={24}
+                        height={24}
+                        className="h-full w-full object-contain"
+                      />
+                    </motion.span>
                   </span>
                 </span>
 
@@ -100,19 +104,6 @@ export function ProjectList() {
           );
         })}
       </ul>
-
-      {/* Decorative glass-bowl illustration on the right, mirroring the pond. */}
-      <div className="pointer-events-none absolute -right-6 top-1/2 hidden -translate-y-1/2 opacity-70 xl:block">
-        <div className="relative size-40">
-          <Image
-            src="/media/pond/blueten/72941998.webp"
-            alt=""
-            fill
-            sizes="10rem"
-            className="rounded-full object-cover opacity-80 mix-blend-multiply"
-          />
-        </div>
-      </div>
     </div>
   );
 }

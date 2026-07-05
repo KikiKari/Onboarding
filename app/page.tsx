@@ -70,61 +70,6 @@ export default function Home() {
           </Container>
         </Section>
 
-        <Section id="demos">
-          <Container className="grid items-center gap-12 lg:grid-cols-2">
-            <Reveal>
-              <span className="eyebrow text-accent">Im Detail</span>
-              <h2 className="display mt-3.5 text-[clamp(2rem,3.4vw,2.5rem)] leading-tight">Ergebnisse werden nicht nur beschrieben, sondern ausprobiert.</h2>
-              <p className="mt-5 max-w-[52ch] leading-relaxed text-ink-2">Vision-Check demonstriert lokale Bildanalyse. Das Periodensystem zeigt, wie eigenständige Experimente in dasselbe Designsystem überführt werden.</p>
-              <ul className="mt-6 space-y-3 pl-5 text-muted">
-                <li>Kamera- und Bild-Workflow ohne Cloud-Schlüssel</li>
-                <li>Interaktive Detailansichten</li>
-                <li>Responsive, zugängliche Bedienung</li>
-              </ul>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Button href="/demos/vision-check">Vision-Check öffnen →</Button>
-                <Button href="/labs/periodensystem" variant="secondary">Periodensystem</Button>
-              </div>
-            </Reveal>
-            <Reveal delay={0.08}>
-              <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface shadow-[var(--shadow-lg)]">
-                <Image src="/media/feature-spotlight.png" alt="Generiertes Spotlight-Motiv für die Projekt-Demos" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
-              </div>
-            </Reveal>
-          </Container>
-        </Section>
-
-        <Section id="schritte" className="border-y border-line bg-surface-2">
-          <Container>
-            <Reveal className="mb-12">
-              <span className="eyebrow text-muted">Schritte</span>
-              <h2 className="display mt-3.5 text-[clamp(2rem,4vw,2.875rem)]">Wie es funktioniert</h2>
-            </Reveal>
-            <div className="grid gap-8 md:grid-cols-3">
-              {siteContent.steps.map((step, index) => (
-                <Reveal delay={index * 0.08} key={step.number}>
-                  <div className="border-t border-line-strong pt-5">
-                    <span className="font-mono text-xs text-accent">{step.number}</span>
-                    <h3 className="display mt-5 text-2xl">{step.title}</h3>
-                    <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">{step.text}</p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          </Container>
-        </Section>
-
-        <Section id="kontakt" className="relative overflow-hidden">
-          <Image src="/media/cta-background.png" alt="" fill className="object-cover opacity-35" sizes="100vw" />
-          <Container className="relative grid items-start gap-12 lg:grid-cols-[1fr_.8fr]">
-            <Reveal>
-              <span className="eyebrow text-accent">Loslegen</span>
-              <h2 className="display mt-4 max-w-[16ch] text-[clamp(2.25rem,5vw,3.75rem)] leading-tight">Bereit für den nächsten Schritt?</h2>
-              <p className="mt-5 max-w-[48ch] text-lg leading-relaxed text-ink-2">Beschreiben Sie kurz, welches Projekt oder welche Zusammenarbeit Sie interessiert.</p>
-            </Reveal>
-            <Reveal delay={0.08}><ContactForm /></Reveal>
-          </Container>
-        </Section>
       </main>
       <Footer />
     </>

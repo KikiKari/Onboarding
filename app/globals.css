@@ -116,3 +116,21 @@ body[data-hero-immersive="true"] header[data-site-header] {
   pointer-events: none;
   transition: opacity 0.4s ease-out;
 }
+
+/* Wassertropfen die frontal am Screen herunterlaufen (Splash-Overlay) */
+@keyframes dropfall {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(110vh);
+    opacity: 0;
+  }
+}

@@ -120,6 +120,8 @@ export function PondExperience() {
   const [heroOpacity, setHeroOpacity] = useState(1);
   const [variant, setVariant] = useState<VariantKey>("A");
   const [masterHovered, setMasterHovered] = useState(false);
+  const [splashActive, setSplashActive] = useState(false);
+  const [showDroplets, setShowDroplets] = useState(false);
   const splashVideoRef = useRef<HTMLVideoElement>(null);
   const clickSplashRef = useRef<HTMLVideoElement>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -162,9 +164,15 @@ export function PondExperience() {
     setPhase(reduceMotion ? "distributed" : "idle");
     setFocusedIdx(null);
     setMasterHovered(false);
+    setSplashActive(false);
+    setShowDroplets(false);
   }, [variant, reduceMotion]);
 
-  // Master anklicken → Story-Sequenz
+  // Master anklicken → Story-Sequenz OHNE sichtbaren BG-Wechsel:
+  //   1. SOFORT: Splash-Video-Overlay startet und bedeckt binnen 300ms den Screen.
+  //   2. Unter dem Splash (unsichtbar): BG wechselt zu Phase-4 (rechtes Blatt).
+  //   3. Während Splash noch läuft: 9 Kugeln erscheinen bereits im Hintergrund.
+  //   4. Splash klingt ab, gibt Blick frei auf die 9 Kugeln.
   function onMasterClick() {
     if (reduceMotion) {
       setPhase("distributed");
@@ -172,26 +180,27 @@ export function PondExperience() {
     }
     if (phase !== "idle" && phase !== "hover-master") return;
 
-    setPhase("rolling");
     setMasterHovered(false);
 
-    // Nach 1s → Splash-Video starten
-    const t1 = setTimeout(() => {
-      setPhase("splashing");
-      splashVideoRef.current?.play().catch(() => {});
-    }, 1000);
+    // Phase 1: Splash SOFORT starten (bedeckt Screen bin 300ms)
+    setSplashActive(true);
+    setShowDroplets(true);
+    setPhase("splashing");
+    setTimeout(() => splashVideoRef.current?.play().catch(() => {}), 30);
 
-    // Nach 2.5s → BG-Wechsel (transition)
-    const t2 = setTimeout(() => {
-      setPhase("transition");
-    }, 2500);
+    // Phase 2: Bei 800ms - unter dem Splash wird BG gewechselt (unsichtbar)
+    const t1 = setTimeout(() => setPhase("transition"), 800);
 
-    // Nach 3.5s → 9 Kugeln erscheinen
-    const t3 = setTimeout(() => {
-      setPhase("distributed");
-    }, 3500);
+    // Phase 3: Bei 2000ms - 9 Kugeln erscheinen (noch unter Splash abklingend)
+    const t2 = setTimeout(() => setPhase("distributed"), 2000);
 
-    timersRef.current.push(t1, t2, t3);
+    // Phase 4: Bei 4500ms - Splash langsam ausblenden, Kugeln werden sichtbar
+    const t3 = setTimeout(() => setSplashActive(false), 4500);
+
+    // Phase 5: Bei 5500ms - Tropfen verschwinden
+    const t4 = setTimeout(() => setShowDroplets(false), 5500);
+
+    timersRef.current.push(t1, t2, t3, t4);
   }
 
   // Projekt-Kugel klicken → Vollbild-Splash → Weiterleitung
@@ -218,7 +227,7 @@ export function PondExperience() {
 
   // Sichtbarkeit der Layer
   const showHeroBG = phase === "idle" || phase === "hover-master" || phase === "rolling";
-  const showSplash = phase === "splashing" || phase === "transition";
+  const showSplash = splashActive;
   const showPhase4BG = phase === "transition" || phase === "distributed" || phase === "hover-project" || phase === "click-splash";
   const showMasterOrb = phase === "idle" || phase === "hover-master" || phase === "rolling";
   const showProjectOrbs = phase === "distributed" || phase === "hover-project";
@@ -277,7 +286,7 @@ export function PondExperience() {
         )}
       </AnimatePresence>
 
-      {/* LAYER 2: Splash-Video (vollflächig, überdeckt alles beim Rollover) */}
+      {/* LAYER 2: Splash-Video (vollflächig, bedeckt alles beim Klick, langes Fade-Out) */}
       <AnimatePresence>
         {showSplash && (
           <motion.video
@@ -289,12 +298,56 @@ export function PondExperience() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
             className="absolute inset-0 z-30 h-full w-full object-cover"
             aria-hidden="true"
           >
             <source src={config.splash} type="video/mp4" />
           </motion.video>
+        )}
+      </AnimatePresence>
+
+      {/* LAYER 2b: Frontal herunterlaufende Wassertropfen (SVG-Overlay, sehr hoch z) */}
+      <AnimatePresence>
+        {showDroplets && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="pointer-events-none absolute inset-0 z-40"
+            aria-hidden="true"
+          >
+            {[
+              { x: 8, delay: 0.1, dur: 2.8, size: 14 },
+              { x: 15, delay: 0.6, dur: 3.2, size: 10 },
+              { x: 22, delay: 0.3, dur: 2.5, size: 18 },
+              { x: 32, delay: 0.9, dur: 3.5, size: 12 },
+              { x: 42, delay: 0.2, dur: 2.9, size: 16 },
+              { x: 50, delay: 0.7, dur: 3.1, size: 9 },
+              { x: 58, delay: 0.4, dur: 2.6, size: 17 },
+              { x: 66, delay: 1.0, dur: 3.4, size: 11 },
+              { x: 74, delay: 0.15, dur: 2.7, size: 14 },
+              { x: 82, delay: 0.8, dur: 3.0, size: 10 },
+              { x: 90, delay: 0.5, dur: 3.3, size: 15 },
+              { x: 96, delay: 1.1, dur: 2.4, size: 8 },
+            ].map((d, i) => (
+              <span
+                key={i}
+                className="absolute top-[-40px] rounded-full"
+                style={{
+                  left: `${d.x}%`,
+                  width: d.size,
+                  height: d.size * 2.2,
+                  background:
+                    "radial-gradient(ellipse at 40% 30%, rgba(255,255,255,0.95) 0%, rgba(200,220,255,0.6) 50%, rgba(100,140,200,0.3) 100%)",
+                  boxShadow: "0 0 8px rgba(200,220,255,0.5)",
+                  animation: `dropfall ${d.dur}s ${d.delay}s ease-in forwards`,
+                }}
+              />
+            ))}
+
+          </motion.div>
         )}
       </AnimatePresence>
 
