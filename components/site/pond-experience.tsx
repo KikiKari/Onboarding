@@ -50,21 +50,23 @@ interface OrbPosition {
 const POND_CONFIG = {
   hero: "/media/hero-v2/videos/pond-idle-A.mp4",
   splash: "/media/hero-v2/videos/rolling-splash-v3.mp4",
-  // Master-Orb auf dem LINKEN Blatt - exakt über der Video-Kugel positioniert
-  // Video-Kugel bei ca. 33.6% x, 47.2% y (aus 1280x720 idle-frame v3 ausgemessen)
-  masterPosition: { left: "34%", top: "47%", size: "clamp(120px, 12vw, 200px)" },
-  // 9 Kugeln auf dem RECHTEN Blatt - Blatt bei x 53-92%, y 51-75%
-  // Kompakt gruppiert auf der Blattfläche, größeres Zentrum, kleinere Ränder
+  // Master-Orb auf dem LINKEN Blatt - exakt über der Video-Kugel positioniert.
+  // Video-Kugel bei 32% x / 48.6% y (aus pond-idle-A.mp4 1280x720 ausgemessen).
+  // Positionen sind relativ zum inneren 16:9 pond-stage-Container, nicht zum Viewport.
+  masterPosition: { left: "32%", top: "48.5%", size: "clamp(110px, 10vw, 180px)" },
+  // 9 Kugeln auf dem RECHTEN Blatt.
+  // Rechtes Blatt im Video: x 49.6-89.8%, y 42.4-77.8%.
+  // Kompaktes 3x3 Gitter mit Rand-Puffer: x 58-83, y 52-72 - alle sicher im Blatt.
   orbLayout: [
-    { x: 62, y: 56, scale: 0.45, z: 2 },
-    { x: 73, y: 54, scale: 0.5, z: 3 },
-    { x: 84, y: 56, scale: 0.45, z: 2 },
-    { x: 60, y: 63, scale: 0.55, z: 4 },
-    { x: 73, y: 62, scale: 0.6, z: 6 },
-    { x: 86, y: 63, scale: 0.55, z: 4 },
-    { x: 65, y: 70, scale: 0.5, z: 3 },
-    { x: 77, y: 70, scale: 0.55, z: 5 },
-    { x: 87, y: 70, scale: 0.5, z: 3 },
+    { x: 58, y: 52, scale: 0.4, z: 2 },
+    { x: 70, y: 52, scale: 0.45, z: 2 },
+    { x: 83, y: 52, scale: 0.4, z: 2 },
+    { x: 58, y: 62, scale: 0.5, z: 5 },
+    { x: 70, y: 62, scale: 0.55, z: 6 },
+    { x: 83, y: 62, scale: 0.5, z: 5 },
+    { x: 58, y: 72, scale: 0.45, z: 3 },
+    { x: 70, y: 72, scale: 0.5, z: 3 },
+    { x: 83, y: 72, scale: 0.45, z: 3 },
   ] as OrbPosition[],
 } as const;
 
@@ -199,6 +201,22 @@ export function PondExperience() {
       aria-label="Interaktiver Teich mit Projektkugeln"
       data-pond-phase={phase}
     >
+      {/*
+       * STAGE: inner 16:9 container that mirrors the video's `object-cover` crop.
+       * All absolute positions (%-based) reference THIS box, so master orb & the 9
+       * project orbs stay locked to the pond image at every viewport aspect ratio.
+       *
+       * Sizing rule matches object-cover for a 16/9 source:
+       *   - viewport wider than 16:9  → height = 100vh, width = (16/9)*100vh, centered horizontally
+       *   - viewport taller than 16:9 → width  = 100vw, height = (9/16)*100vw, centered vertically
+       */}
+      <div
+        className="pond-stage absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+        style={{
+          width: "max(100vw, calc(100vh * 16 / 9))",
+          height: "max(100vh, calc(100vw * 9 / 16))",
+        }}
+      >
       {/* LAYER 1: Hero-Hintergrund - IMMER sichtbar durch alle Phasen (konstant) */}
       <video
         autoPlay
@@ -206,7 +224,7 @@ export function PondExperience() {
         loop
         playsInline
         preload="auto"
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-fill"
         aria-hidden="true"
       >
         <source src={config.hero} type="video/mp4" />
@@ -224,7 +242,7 @@ export function PondExperience() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
-            className="absolute inset-0 z-30 h-full w-full object-cover"
+            className="absolute inset-0 z-30 h-full w-full object-fill"
             aria-hidden="true"
           >
             <source src={config.splash} type="video/mp4" />
@@ -430,6 +448,7 @@ export function PondExperience() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </section>
   );
 }

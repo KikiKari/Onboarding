@@ -1,7 +1,12 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm install
+# Retry-freundliche Konfiguration gegen ECONNRESET bei npm install
+RUN npm config set fetch-retries 5 \
+ && npm config set fetch-retry-mintimeout 60000 \
+ && npm config set fetch-retry-maxtimeout 300000 \
+ && npm config set fetch-timeout 600000 \
+ && (npm ci --no-audit --no-fund || npm ci --no-audit --no-fund || npm install --no-audit --no-fund)
 
 FROM node:22-alpine AS builder
 WORKDIR /app
