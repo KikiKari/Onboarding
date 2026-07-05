@@ -54,23 +54,24 @@ const POND_CONFIG = {
   splash: "/media/hero-v2/videos/pond-story-v1.mp4",
   // Master-Orb-Position im ersten Frame: Kugel liegt bei ca. 30% / 60% - ist im
   // Video sichtbar. Wir platzieren dort eine transparente Klick-Hitbox drueber.
-  masterPosition: { left: "30%", top: "60%", size: "clamp(160px, 13vw, 220px)" },
-  // 9 Kugeln auf dem RECHTEN Blatt (Endframe des Story-Videos):
-  // Blatt-Grenzen: x 44-67%, y 64-86%, Zentrum (56, 75).
-  // 3D-Perspektive: hinten (kleines y) klein, vorne (grosses y) gross.
+  masterPosition: { left: "35%", top: "47%", size: "clamp(180px, 15vw, 260px)" },
+  // 9 Kugeln UM die gelandete Master-Kugel herum, als Gefolge auf demselben
+  // rechten Blatt. Master landet bei ca. 55% x / 72% y (Endframe des Videos).
+  // Blatt: x 40-77%, y 64-97%. Kugeln bilden Halbkreis um Master (unten offen).
+  // Kleiner als Master, damit sie sich sichtbar unterordnen.
   orbLayout: [
-    // HINTEN (klein, oben am Blatt)
-    { x: 48.0, y: 66.5, scale: 0.20, z: 2 },
-    { x: 55.5, y: 65.5, scale: 0.22, z: 3 },
-    { x: 63.0, y: 66.5, scale: 0.20, z: 2 },
-    // MITTE (mittelgross)
-    { x: 46.5, y: 73.0, scale: 0.28, z: 4 },
-    { x: 55.5, y: 72.5, scale: 0.32, z: 5 },
-    { x: 64.5, y: 73.0, scale: 0.26, z: 4 },
-    // VORNE (gross, unten am Blatt)
-    { x: 49.0, y: 80.0, scale: 0.34, z: 6 },
-    { x: 56.5, y: 82.0, scale: 0.40, z: 8 },
-    { x: 64.0, y: 79.5, scale: 0.32, z: 6 },
+    // Hintere Reihe (kleine y, klein)
+    { x: 48.0, y: 66.5, scale: 0.14, z: 2 },
+    { x: 55.0, y: 65.5, scale: 0.16, z: 3 },
+    { x: 62.0, y: 66.5, scale: 0.14, z: 2 },
+    // Seitlich (mittelgross)
+    { x: 44.0, y: 72.0, scale: 0.18, z: 4 },
+    { x: 66.5, y: 72.0, scale: 0.18, z: 4 },
+    // Vordere Reihe (grosse y, groesser)
+    { x: 46.5, y: 79.0, scale: 0.22, z: 6 },
+    { x: 53.0, y: 82.0, scale: 0.24, z: 7 },
+    { x: 60.0, y: 82.0, scale: 0.24, z: 7 },
+    { x: 65.5, y: 79.0, scale: 0.22, z: 6 },
   ] as OrbPosition[],
 } as const;
 
@@ -154,10 +155,10 @@ export function PondExperience() {
     // 5000ms:  Splash-Video zu Ende, faded aus
     // 5300ms:  9 Kugeln steigen aus dem Wasser auf
 
-    // Ein-Video-Story-Flow: Das Hero-Video ENTHAeLT bereits die komplette
-    // Sequenz (Idle -> Roll -> Splash -> Landing). Vor Klick pausiert bei
-    // Frame 0. Bei Klick spielt es ab. Am Video-Ende (8s) erscheinen die 9
-    // Kugeln auf dem rechten Blatt.
+    // Ein-Video-Story: Hero-Video enthaelt die komplette Sequenz.
+    // Bei ca. 6s ist der Splash-Moment - dann startet der CSS-Wasser-Overlay
+    // um den Uebergang zu ueberdecken. Bei 8s (Video-Ende) erscheinen die
+    // 9 Kugeln.
     setPhase("splashing");
     const heroVideo = heroVideoRef.current;
     if (heroVideo) {
@@ -165,9 +166,13 @@ export function PondExperience() {
       heroVideo.play().catch(() => {});
     }
 
-    // Nach Video-Ende (8s): 9 Kugeln erscheinen
-    const t1 = setTimeout(() => setPhase("distributed"), 8000);
-    timersRef.current.push(t1);
+    // Bei 6s: CSS-Wasser-Splash-Overlay startet ueber der Landeposition
+    const t0 = setTimeout(() => setSplashActive(true), 6000);
+    // Bei 7.5s: 9 Kugeln beginnen zu erscheinen (unter dem noch aktiven Splash)
+    const t1 = setTimeout(() => setPhase("distributed"), 7500);
+    // Bei 8.5s: Splash-Overlay klingt ab
+    const t2 = setTimeout(() => setSplashActive(false), 8500);
+    timersRef.current.push(t0, t1, t2);
   }
 
   // Projekt-Kugel klicken → Vollbild-Splash → Weiterleitung
@@ -248,8 +253,73 @@ export function PondExperience() {
           mit realistischer Wasser-Interaktion. Der CSS-Overlay hat nur den
           Look mit unrealistischen Lichtpunkten gestoert. */}
 
-      {/* LAYER 2: KEIN separates Splash-Video mehr. Das Hero-Video enthaelt
-          bereits die komplette Splash-Sequenz. */}
+      {/* LAYER 2: CSS-Wasser-Splash-Overlay UEBER dem Landepunkt der Master-Kugel.
+          Aktiv 6-8.5s nach Klick - genau wenn im Video die Kugel landet.
+          Konzentrische Wasserwellen + weisse Tropfen expandieren, ueberdecken
+          den Uebergang zwischen Master-Landung und 9-Kugeln-Erscheinen. */}
+      <AnimatePresence>
+        {splashActive && (
+          <div
+            aria-hidden="true"
+            className="absolute z-20 pointer-events-none"
+            style={{ left: "55%", top: "72%", width: 0, height: 0 }}
+          >
+            {/* 3 konzentrische Wellen expandieren */}
+            {[0, 0.3, 0.6].map((delay, i) => (
+              <motion.div
+                key={`wave-${i}`}
+                initial={{ opacity: 0, scale: 0.3, x: "-50%", y: "-50%" }}
+                animate={{ opacity: [0, 0.7, 0], scale: [0.3, 3, 6], x: "-50%", y: "-50%" }}
+                transition={{ duration: 2, delay, ease: "easeOut" }}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  width: "clamp(200px, 20vw, 400px)",
+                  height: "clamp(200px, 20vw, 400px)",
+                  borderRadius: "50%",
+                  border: "3px solid rgba(255,255,255,0.6)",
+                  boxShadow: "inset 0 0 20px rgba(255,255,255,0.4), 0 0 30px rgba(200,230,255,0.4)",
+                  transform: "translate(-50%, -50%) scaleY(0.6)",
+                }}
+              />
+            ))}
+            {/* Wasser-Tropfen fliegen radial vom Landepunkt weg */}
+            {Array.from({ length: 16 }).map((_, i) => {
+              const angle = (i / 16) * Math.PI * 2 - Math.PI / 2;
+              const distance = 120 + (i % 3) * 40;
+              const endX = Math.cos(angle) * distance;
+              const endY = Math.sin(angle) * distance * 0.7 - 30;
+              const size = 8 + (i % 4) * 3;
+              return (
+                <motion.div
+                  key={`drop-${i}`}
+                  initial={{ x: 0, y: 0, opacity: 0, scale: 0.5 }}
+                  animate={{
+                    x: [0, endX * 0.6, endX],
+                    y: [0, endY, endY + 60],
+                    opacity: [0, 1, 0],
+                    scale: [0.5, 1, 0.4],
+                  }}
+                  transition={{ duration: 1.4, delay: i * 0.04, ease: "easeOut" }}
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    width: `${size}px`,
+                    height: `${size * 1.3}px`,
+                    borderRadius: "50% 50% 45% 45%",
+                    background:
+                      "radial-gradient(ellipse at 35% 30%, rgba(255,255,255,0.9), rgba(200,225,240,0.7) 50%, rgba(120,170,200,0.5) 100%)",
+                    boxShadow:
+                      "inset -1px -2px 3px rgba(80,120,150,0.4), 0 1px 2px rgba(0,20,40,0.3)",
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* LAYER 4: Master-Orb */}
       <AnimatePresence>
