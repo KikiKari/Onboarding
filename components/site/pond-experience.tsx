@@ -50,19 +50,19 @@ interface OrbPosition {
 const POND_CONFIG = {
   hero: "/media/hero-v2/videos/pond-idle-A.mp4",
   splash: "/media/hero-v2/videos/rolling-splash-v2.mp4",
-  // Master-Orb auf dem linken Blatt (Blatt liegt bei x ~5-55%, y ~65-90%)
-  masterPosition: { left: "35%", top: "70%", size: "clamp(100px, 12vw, 190px)" },
-  // 9 Kugeln kompakt auf dem rechten Blatt (Blatt liegt bei x ~62-100%, y ~68-90%)
+  // Master-Orb auf dem LINKEN Blatt (Blatt bei x ~15-58%, y ~55-95%)
+  masterPosition: { left: "38%", top: "68%", size: "clamp(110px, 13vw, 210px)" },
+  // 9 Kugeln kompakt auf dem RECHTEN Blatt (Blatt bei x ~55-92%, y ~62-92%)
   orbLayout: [
-    { x: 72, y: 72, scale: 0.55, z: 2 },
-    { x: 80, y: 71, scale: 0.5, z: 2 },
-    { x: 88, y: 72, scale: 0.55, z: 2 },
-    { x: 70, y: 76, scale: 0.65, z: 4 },
-    { x: 80, y: 75, scale: 0.7, z: 6 },
-    { x: 90, y: 76, scale: 0.6, z: 4 },
-    { x: 74, y: 80, scale: 0.6, z: 3 },
-    { x: 84, y: 80, scale: 0.65, z: 5 },
-    { x: 79, y: 83, scale: 0.55, z: 3 },
+    { x: 62, y: 70, scale: 0.5, z: 2 },
+    { x: 72, y: 68, scale: 0.55, z: 3 },
+    { x: 84, y: 70, scale: 0.5, z: 2 },
+    { x: 62, y: 76, scale: 0.6, z: 4 },
+    { x: 73, y: 75, scale: 0.7, z: 6 },
+    { x: 85, y: 76, scale: 0.6, z: 4 },
+    { x: 66, y: 82, scale: 0.55, z: 3 },
+    { x: 78, y: 82, scale: 0.65, z: 5 },
+    { x: 88, y: 82, scale: 0.55, z: 3 },
   ] as OrbPosition[],
 } as const;
 
