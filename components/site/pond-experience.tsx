@@ -48,26 +48,29 @@ interface OrbPosition {
  * (dort wo der Master war).
  */
 const POND_CONFIG = {
-  hero: "/media/hero-v2/videos/pond-idle-v3.mp4",
-  splash: "/media/hero-v2/videos/rolling-splash-v5.mp4",
-  // Master-Orb auf dem LINKEN Blatt (Video pond-idle-v3, aus 1280x720 ausgemessen):
-  // Kugel-Zentrum bei 30.5% x / 55.6% y. Kugel-Durchmesser ~8.6vw.
-  masterPosition: { left: "30.5%", top: "55.6%", size: "clamp(120px, 9vw, 170px)" },
-  // 9 Kugeln auf dem RECHTEN Blatt (v3): x 49-79%, y 44-75%, Zentrum (64, 60).
-  // 3D-Perspektive: hinten klein/hoch, vorne gross/tief. Enger als Blatt-Grenzen.
+  // Ein einziges Story-Video (8.2s): Kugel liegt auf linkem Blatt, rollt nach
+  // rechts, splasht ins Wasser, landet auf rechtem Blatt. Kein separates Splash.
+  hero: "/media/hero-v2/videos/pond-story-v1.mp4",
+  splash: "/media/hero-v2/videos/pond-story-v1.mp4",
+  // Master-Orb-Position im ersten Frame: Kugel liegt bei ca. 30% / 60% - ist im
+  // Video sichtbar. Wir platzieren dort eine transparente Klick-Hitbox drueber.
+  masterPosition: { left: "30%", top: "60%", size: "clamp(160px, 13vw, 220px)" },
+  // 9 Kugeln auf dem RECHTEN Blatt (Endframe des Story-Videos):
+  // Blatt-Grenzen: x 44-67%, y 64-86%, Zentrum (56, 75).
+  // 3D-Perspektive: hinten (kleines y) klein, vorne (grosses y) gross.
   orbLayout: [
-    // HINTEN (klein)
-    { x: 55.0, y: 50.0, scale: 0.22, z: 2 },
-    { x: 64.0, y: 48.5, scale: 0.24, z: 3 },
-    { x: 72.5, y: 50.5, scale: 0.22, z: 2 },
-    // MITTE (mittel)
-    { x: 53.0, y: 58.0, scale: 0.30, z: 4 },
-    { x: 63.0, y: 57.0, scale: 0.34, z: 5 },
-    { x: 74.0, y: 58.5, scale: 0.28, z: 4 },
-    // VORNE (gross)
-    { x: 55.5, y: 66.0, scale: 0.36, z: 6 },
-    { x: 64.5, y: 68.0, scale: 0.42, z: 8 },
-    { x: 74.5, y: 65.5, scale: 0.34, z: 6 },
+    // HINTEN (klein, oben am Blatt)
+    { x: 48.0, y: 66.5, scale: 0.20, z: 2 },
+    { x: 55.5, y: 65.5, scale: 0.22, z: 3 },
+    { x: 63.0, y: 66.5, scale: 0.20, z: 2 },
+    // MITTE (mittelgross)
+    { x: 46.5, y: 73.0, scale: 0.28, z: 4 },
+    { x: 55.5, y: 72.5, scale: 0.32, z: 5 },
+    { x: 64.5, y: 73.0, scale: 0.26, z: 4 },
+    // VORNE (gross, unten am Blatt)
+    { x: 49.0, y: 80.0, scale: 0.34, z: 6 },
+    { x: 56.5, y: 82.0, scale: 0.40, z: 8 },
+    { x: 64.0, y: 79.5, scale: 0.32, z: 6 },
   ] as OrbPosition[],
 } as const;
 
@@ -91,6 +94,7 @@ export function PondExperience() {
   const [heroOpacity, setHeroOpacity] = useState(1);
   const [masterHovered, setMasterHovered] = useState(false);
   const [splashActive, setSplashActive] = useState(false);
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
   const splashVideoRef = useRef<HTMLVideoElement>(null);
   const clickSplashRef = useRef<HTMLVideoElement>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -150,20 +154,20 @@ export function PondExperience() {
     // 5000ms:  Splash-Video zu Ende, faded aus
     // 5300ms:  9 Kugeln steigen aus dem Wasser auf
 
-    // Splash-Video startet DIREKT beim Klick. Es zeigt die rollende Kugel und
-    // den Wasserspritzer im gleichen Look wie das Idle-Video. Keine CSS-Overlays,
-    // keine Blenden, keine Effekte darueber - das Video macht den Uebergang.
+    // Ein-Video-Story-Flow: Das Hero-Video ENTHAeLT bereits die komplette
+    // Sequenz (Idle -> Roll -> Splash -> Landing). Vor Klick pausiert bei
+    // Frame 0. Bei Klick spielt es ab. Am Video-Ende (8s) erscheinen die 9
+    // Kugeln auf dem rechten Blatt.
     setPhase("splashing");
-    setSplashActive(true);
-    requestAnimationFrame(() => {
-      splashVideoRef.current?.play().catch(() => {});
-    });
+    const heroVideo = heroVideoRef.current;
+    if (heroVideo) {
+      heroVideo.currentTime = 0;
+      heroVideo.play().catch(() => {});
+    }
 
-    // Kugeln steigen NACH dem Splash-Video-Ende aus dem Wasser auf.
-    const t1 = setTimeout(() => setPhase("distributed"), 5000);
-    const t2 = setTimeout(() => setSplashActive(false), 5000);
-
-    timersRef.current.push(t1, t2);
+    // Nach Video-Ende (8s): 9 Kugeln erscheinen
+    const t1 = setTimeout(() => setPhase("distributed"), 8000);
+    timersRef.current.push(t1);
   }
 
   // Projekt-Kugel klicken → Vollbild-Splash → Weiterleitung
@@ -220,15 +224,22 @@ export function PondExperience() {
           height: "max(100vh, calc(100vw * 9 / 16))",
         }}
       >
-      {/* LAYER 1: Hero-Hintergrund - IMMER sichtbar durch alle Phasen (konstant) */}
+      {/* LAYER 1: Ein-Video-Story. Pausiert bei Frame 0 = Idle-Zustand mit
+          Kugel auf linkem Blatt. Bei Klick spielt es einmal komplett ab und
+          endet mit Kugel auf rechtem Blatt. Video hat KEINEN Ton (muted). */}
       <video
-        autoPlay
+        ref={heroVideoRef}
         muted
-        loop
         playsInline
         preload="auto"
         className="absolute inset-0 h-full w-full object-fill"
         aria-hidden="true"
+        onLoadedMetadata={(e) => {
+          // Direkt bei Frame 0 stehen bleiben (Idle-Zustand)
+          const v = e.currentTarget;
+          v.currentTime = 0;
+          v.pause();
+        }}
       >
         <source src={config.hero} type="video/mp4" />
       </video>
@@ -237,27 +248,8 @@ export function PondExperience() {
           mit realistischer Wasser-Interaktion. Der CSS-Overlay hat nur den
           Look mit unrealistischen Lichtpunkten gestoert. */}
 
-      {/* LAYER 2: Splash-Video (Overlay, positioniert wo der Master lag).
-          Startet OHNE Fade-in - Video zeigt selbst die rollende Kugel, also
-          soll der Klick direkt in die Rolling-Sequenz uebergehen. */}
-      <AnimatePresence>
-        {showSplash && (
-          <motion.video
-            ref={splashVideoRef}
-            muted
-            playsInline
-            autoPlay
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="absolute inset-0 z-30 h-full w-full object-fill"
-            aria-hidden="true"
-          >
-            <source src={config.splash} type="video/mp4" />
-          </motion.video>
-        )}
-      </AnimatePresence>
+      {/* LAYER 2: KEIN separates Splash-Video mehr. Das Hero-Video enthaelt
+          bereits die komplette Splash-Sequenz. */}
 
       {/* LAYER 4: Master-Orb */}
       <AnimatePresence>
