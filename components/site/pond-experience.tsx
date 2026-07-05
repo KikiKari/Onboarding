@@ -41,76 +41,43 @@ interface OrbPosition {
   z: number;
 }
 
-type VariantKey = "A" | "B";
-
 /**
- * Zwei Video-Varianten:
- * A: Video B als Hero (ruhige Kamera, 2 Blätter) - Master auf LINKEM Blatt
- * B: Neues B-Video mit einem großen dominanten Blatt - Master mittig darauf
- * Beide Varianten teilen sich denselben Post-Splash-Hintergrund (phase4-pond-A).
+ * Einheitliche Konfiguration - EIN konstanter Hintergrund für die ganze Story:
+ * Landing-Video läuft in Loop, Splash ist nur ein Overlay darüber. Nach dem Splash
+ * bleibt derselbe Hintergrund sichtbar mit den 9 Kugeln auf dem linken Blatt
+ * (dort wo der Master war).
  */
-const VARIANTS: Record<
-  VariantKey,
-  {
-    hero: string;
-    heroPoster?: string;
-    phase4: string;
-    splash: string;
-    masterPosition: { left: string; top: string; size: string };
-    orbLayout: OrbPosition[];
-    label: string;
-  }
-> = {
-  A: {
-    hero: "/media/hero-v2/videos/pond-idle-A.mp4",
-    phase4: "/media/hero-v2/videos/phase4-pond-A.mp4",
-    splash: "/media/hero-v2/videos/rolling-splash-v2.mp4",
-    masterPosition: { left: "34%", top: "62%", size: "clamp(240px, 28vw, 460px)" },
-    // 9 Kugeln alle auf dem RECHTEN Blatt (nur rechte Hälfte, gruppiert)
-    orbLayout: [
-      { x: 62, y: 60, scale: 0.85, z: 3 },
-      { x: 68, y: 58, scale: 0.9, z: 4 },
-      { x: 74, y: 62, scale: 0.85, z: 3 },
-      { x: 60, y: 68, scale: 0.95, z: 5 },
-      { x: 66, y: 70, scale: 1.0, z: 6 },
-      { x: 72, y: 68, scale: 0.9, z: 4 },
-      { x: 78, y: 66, scale: 0.85, z: 3 },
-      { x: 64, y: 76, scale: 0.95, z: 5 },
-      { x: 72, y: 76, scale: 0.9, z: 4 },
-    ],
-    label: "A · 2-Blätter",
-  },
-  B: {
-    hero: "/media/hero-v2/videos/pond-idle-B.mp4",
-    phase4: "/media/hero-v2/videos/phase4-pond-A.mp4",
-    splash: "/media/hero-v2/videos/rolling-splash-v2.mp4",
-    masterPosition: { left: "50%", top: "55%", size: "clamp(240px, 28vw, 460px)" },
-    // Nach Splash gleicher Post-BG wie Variante A
-    orbLayout: [
-      { x: 62, y: 60, scale: 0.85, z: 3 },
-      { x: 68, y: 58, scale: 0.9, z: 4 },
-      { x: 74, y: 62, scale: 0.85, z: 3 },
-      { x: 60, y: 68, scale: 0.95, z: 5 },
-      { x: 66, y: 70, scale: 1.0, z: 6 },
-      { x: 72, y: 68, scale: 0.9, z: 4 },
-      { x: 78, y: 66, scale: 0.85, z: 3 },
-      { x: 64, y: 76, scale: 0.95, z: 5 },
-      { x: 72, y: 76, scale: 0.9, z: 4 },
-    ],
-    label: "B · großes Blatt",
-  },
-};
+const POND_CONFIG = {
+  hero: "/media/hero-v2/videos/pond-idle-A.mp4",
+  splash: "/media/hero-v2/videos/rolling-splash-v2.mp4",
+  // Master-Orb auf linkem Blatt
+  // Master-Orb auf dem linken Blatt (Blatt liegt bei x ~15-50%, y ~55-90%)
+  masterPosition: { left: "25%", top: "65%", size: "clamp(140px, 16vw, 260px)" },
+  // 9 Kugeln kompakt auf dem rechten Blatt (Blatt liegt bei x ~65-95%, y ~40-58%)
+  orbLayout: [
+    { x: 72, y: 43, scale: 0.55, z: 2 },
+    { x: 78, y: 42, scale: 0.5, z: 2 },
+    { x: 85, y: 43, scale: 0.55, z: 2 },
+    { x: 70, y: 48, scale: 0.65, z: 4 },
+    { x: 78, y: 47, scale: 0.7, z: 6 },
+    { x: 87, y: 48, scale: 0.6, z: 4 },
+    { x: 74, y: 53, scale: 0.6, z: 3 },
+    { x: 82, y: 53, scale: 0.65, z: 5 },
+    { x: 78, y: 57, scale: 0.55, z: 3 },
+  ] as OrbPosition[],
+} as const;
 
+/** Neue Glaskugeln von Nano Banana Pro mit dezentem Farbkern */
 const ORB_FILES = [
-  "orb-01-teal.png",
-  "orb-02-copper.png",
-  "orb-03-amber.png",
-  "orb-04-emerald.png",
-  "orb-05-original.png",
-  "orb-06-rose.png",
-  "orb-07-gold.png",
-  "orb-08-lavender.png",
-  "orb-09-ivory.png",
+  "glass-orbs/orb-glass-01-teal.png",
+  "glass-orbs/orb-glass-02-copper.png",
+  "glass-orbs/orb-glass-03-amber.png",
+  "glass-orbs/orb-glass-04-emerald.png",
+  "glass-orbs/orb-glass-05-clear.png",
+  "glass-orbs/orb-glass-06-rose.png",
+  "glass-orbs/orb-glass-07-gold.png",
+  "glass-orbs/orb-glass-08-lavender.png",
+  "glass-orbs/orb-glass-09-ivory.png",
 ];
 
 export function PondExperience() {
@@ -118,15 +85,13 @@ export function PondExperience() {
   const [phase, setPhase] = useState<Phase>(reduceMotion ? "distributed" : "idle");
   const [focusedIdx, setFocusedIdx] = useState<number | null>(null);
   const [heroOpacity, setHeroOpacity] = useState(1);
-  const [variant, setVariant] = useState<VariantKey>("A");
   const [masterHovered, setMasterHovered] = useState(false);
   const [splashActive, setSplashActive] = useState(false);
-  const [showDroplets, setShowDroplets] = useState(false);
   const splashVideoRef = useRef<HTMLVideoElement>(null);
   const clickSplashRef = useRef<HTMLVideoElement>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const config = VARIANTS[variant];
+  const config = POND_CONFIG;
   const projectsToShow: Project[] = projects.slice(0, 9);
 
   // Header verstecken bei immersive Hero
@@ -157,16 +122,7 @@ export function PondExperience() {
     };
   }, []);
 
-  // Bei Variant-Wechsel: alles zurücksetzen
-  useEffect(() => {
-    timersRef.current.forEach(clearTimeout);
-    timersRef.current = [];
-    setPhase(reduceMotion ? "distributed" : "idle");
-    setFocusedIdx(null);
-    setMasterHovered(false);
-    setSplashActive(false);
-    setShowDroplets(false);
-  }, [variant, reduceMotion]);
+
 
   // Master anklicken → Story-Sequenz OHNE sichtbaren BG-Wechsel:
   //   1. SOFORT: Splash-Video-Overlay startet und bedeckt binnen 300ms den Screen.
@@ -182,25 +138,23 @@ export function PondExperience() {
 
     setMasterHovered(false);
 
-    // Phase 1: Splash SOFORT starten (bedeckt Screen bin 300ms)
-    setSplashActive(true);
-    setShowDroplets(true);
-    setPhase("splashing");
-    setTimeout(() => splashVideoRef.current?.play().catch(() => {}), 30);
+    // Phase 1: Master beginnt zu rollen (Hitbox animiert weg vom Blatt)
+    setPhase("rolling");
 
-    // Phase 2: Bei 800ms - unter dem Splash wird BG gewechselt (unsichtbar)
-    const t1 = setTimeout(() => setPhase("transition"), 800);
+    // Phase 2: Nach 800ms - Master erreicht Wasser, Splash-Overlay startet
+    const t1 = setTimeout(() => {
+      setSplashActive(true);
+      setPhase("splashing");
+      setTimeout(() => splashVideoRef.current?.play().catch(() => {}), 30);
+    }, 800);
 
-    // Phase 3: Bei 2000ms - 9 Kugeln erscheinen (noch unter Splash abklingend)
-    const t2 = setTimeout(() => setPhase("distributed"), 2000);
+    // Phase 3: Bei 2800ms - Kugeln beginnen zu erscheinen (noch unter Splash)
+    const t2 = setTimeout(() => setPhase("distributed"), 2800);
 
-    // Phase 4: Bei 4500ms - Splash langsam ausblenden, Kugeln werden sichtbar
+    // Phase 4: Bei 4500ms - Splash langsam ausblenden
     const t3 = setTimeout(() => setSplashActive(false), 4500);
 
-    // Phase 5: Bei 5500ms - Tropfen verschwinden
-    const t4 = setTimeout(() => setShowDroplets(false), 5500);
-
-    timersRef.current.push(t1, t2, t3, t4);
+    timersRef.current.push(t1, t2, t3);
   }
 
   // Projekt-Kugel klicken → Vollbild-Splash → Weiterleitung
@@ -225,10 +179,8 @@ export function PondExperience() {
 
   const focused = focusedIdx !== null ? projectsToShow[focusedIdx] : null;
 
-  // Sichtbarkeit der Layer
-  const showHeroBG = phase === "idle" || phase === "hover-master" || phase === "rolling";
+  // Sichtbarkeit der Layer (Hero-BG ist immer da, kein Toggle)
   const showSplash = splashActive;
-  const showPhase4BG = phase === "transition" || phase === "distributed" || phase === "hover-project" || phase === "click-splash";
   const showMasterOrb = phase === "idle" || phase === "hover-master" || phase === "rolling";
   const showProjectOrbs = phase === "distributed" || phase === "hover-project";
 
@@ -243,54 +195,23 @@ export function PondExperience() {
       aria-label="Interaktiver Teich mit Projektkugeln"
       data-pond-phase={phase}
     >
-      {/* Variant-Toggle oben rechts */}
-      <div
-        className="absolute right-4 top-4 z-[100] flex items-center gap-1 rounded-full border border-white/25 bg-black/50 p-1 backdrop-blur-md"
-        role="group"
-        aria-label="Video-Variante wählen"
+      {/* LAYER 1: Hero-Hintergrund - IMMER sichtbar durch alle Phasen (konstant) */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        className="absolute inset-0 h-full w-full object-cover"
+        aria-hidden="true"
       >
-        {(Object.keys(VARIANTS) as VariantKey[]).map((key) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setVariant(key)}
-            aria-pressed={variant === key}
-            className={`rounded-full px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] transition-colors ${
-              variant === key ? "bg-white text-black" : "text-white/80 hover:text-white"
-            }`}
-          >
-            {VARIANTS[key].label}
-          </button>
-        ))}
-      </div>
+        <source src={config.hero} type="video/mp4" />
+      </video>
 
-      {/* LAYER 1: Hero-Hintergrund (idle/rolling/hover-master) */}
-      <AnimatePresence>
-        {showHeroBG && (
-          <motion.video
-            key={`hero-bg-${variant}`}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="absolute inset-0 h-full w-full object-cover"
-            aria-hidden="true"
-          >
-            <source src={config.hero} type="video/mp4" />
-          </motion.video>
-        )}
-      </AnimatePresence>
-
-      {/* LAYER 2: Splash-Video (vollflächig, bedeckt alles beim Klick, langes Fade-Out) */}
+      {/* LAYER 2: Splash-Video (Overlay, positioniert wo der Master lag) */}
       <AnimatePresence>
         {showSplash && (
           <motion.video
-            key={`splash-${variant}`}
             ref={splashVideoRef}
             muted
             playsInline
@@ -303,72 +224,6 @@ export function PondExperience() {
             aria-hidden="true"
           >
             <source src={config.splash} type="video/mp4" />
-          </motion.video>
-        )}
-      </AnimatePresence>
-
-      {/* LAYER 2b: Frontal herunterlaufende Wassertropfen (SVG-Overlay, sehr hoch z) */}
-      <AnimatePresence>
-        {showDroplets && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="pointer-events-none absolute inset-0 z-40"
-            aria-hidden="true"
-          >
-            {[
-              { x: 8, delay: 0.1, dur: 2.8, size: 14 },
-              { x: 15, delay: 0.6, dur: 3.2, size: 10 },
-              { x: 22, delay: 0.3, dur: 2.5, size: 18 },
-              { x: 32, delay: 0.9, dur: 3.5, size: 12 },
-              { x: 42, delay: 0.2, dur: 2.9, size: 16 },
-              { x: 50, delay: 0.7, dur: 3.1, size: 9 },
-              { x: 58, delay: 0.4, dur: 2.6, size: 17 },
-              { x: 66, delay: 1.0, dur: 3.4, size: 11 },
-              { x: 74, delay: 0.15, dur: 2.7, size: 14 },
-              { x: 82, delay: 0.8, dur: 3.0, size: 10 },
-              { x: 90, delay: 0.5, dur: 3.3, size: 15 },
-              { x: 96, delay: 1.1, dur: 2.4, size: 8 },
-            ].map((d, i) => (
-              <span
-                key={i}
-                className="absolute top-[-40px] rounded-full"
-                style={{
-                  left: `${d.x}%`,
-                  width: d.size,
-                  height: d.size * 2.2,
-                  background:
-                    "radial-gradient(ellipse at 40% 30%, rgba(255,255,255,0.95) 0%, rgba(200,220,255,0.6) 50%, rgba(100,140,200,0.3) 100%)",
-                  boxShadow: "0 0 8px rgba(200,220,255,0.5)",
-                  animation: `dropfall ${d.dur}s ${d.delay}s ease-in forwards`,
-                }}
-              />
-            ))}
-
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* LAYER 3: Phase-4-BG (nach Splash, mit rechtem Blatt) */}
-      <AnimatePresence>
-        {showPhase4BG && (
-          <motion.video
-            key={`phase4-${variant}`}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="absolute inset-0 h-full w-full object-cover"
-            aria-hidden="true"
-          >
-            <source src={config.phase4} type="video/mp4" />
           </motion.video>
         )}
       </AnimatePresence>
@@ -404,9 +259,19 @@ export function PondExperience() {
               padding: 0,
             }}
           >
-            {/* Master-Orb-Sprite ist UNSICHTBAR - die im Video eingebettete Kugel
-                bleibt sichtbar. Der Button ist nur Hover-/Klick-Hitbox. */}
+            {/* Master-Orb-Sprite:
+                - Idle/Hover: UNSICHTBAR (die im Video eingebettete Kugel ist sichtbar)
+                - Rolling: SICHTBAR (rollt weg vom Blatt, Video-Kugel bleibt scheinbar)
+                Bei rolling-Start wird das Sprite fade-in und rollt danach weg. */}
             <span className="sr-only">{heroPond.masterLink.label}</span>
+            {phase === "rolling" && (
+              <img
+                src="/media/hero-v2/kugeln-v2/master.png"
+                alt=""
+                className="absolute inset-0 h-full w-full object-contain"
+                draggable={false}
+              />
+            )}
           </motion.button>
         )}
       </AnimatePresence>
@@ -494,7 +359,7 @@ export function PondExperience() {
                 }}
               >
                 <img
-                  src={`/media/hero-v2/kugeln-v2/${orbFile}`}
+                  src={`/media/hero-v2/${orbFile}`}
                   alt=""
                   className="h-full w-full object-contain"
                   draggable={false}
