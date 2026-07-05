@@ -62,10 +62,10 @@ const VARIANTS: Record<
   }
 > = {
   A: {
-    hero: "/media/hero-v2/videos/hero-loop-B.mp4",
+    hero: "/media/hero-v2/videos/pond-idle-A.mp4",
     phase4: "/media/hero-v2/videos/phase4-pond-A.mp4",
-    splash: "/media/hero-v2/videos/hero-loop-B.mp4", // Video B enthält Splash-Sequenz
-    masterPosition: { left: "34%", top: "65%", size: "clamp(180px, 22vw, 380px)" },
+    splash: "/media/hero-v2/videos/rolling-splash-v2.mp4",
+    masterPosition: { left: "34%", top: "62%", size: "clamp(240px, 28vw, 460px)" },
     // 9 Kugeln alle auf dem RECHTEN Blatt (nur rechte Hälfte, gruppiert)
     orbLayout: [
       { x: 62, y: 60, scale: 0.85, z: 3 },
@@ -81,10 +81,10 @@ const VARIANTS: Record<
     label: "A · 2-Blätter",
   },
   B: {
-    hero: "/media/hero-v2/videos/hero-loop-B-v2.mp4",
+    hero: "/media/hero-v2/videos/pond-idle-B.mp4",
     phase4: "/media/hero-v2/videos/phase4-pond-A.mp4",
-    splash: "/media/hero-v2/videos/hero-loop-B.mp4",
-    masterPosition: { left: "50%", top: "52%", size: "clamp(140px, 16vw, 280px)" },
+    splash: "/media/hero-v2/videos/rolling-splash-v2.mp4",
+    masterPosition: { left: "50%", top: "55%", size: "clamp(240px, 28vw, 460px)" },
     // Nach Splash gleicher Post-BG wie Variante A
     orbLayout: [
       { x: 62, y: 60, scale: 0.85, z: 3 },
@@ -112,9 +112,6 @@ const ORB_FILES = [
   "orb-08-lavender.png",
   "orb-09-ivory.png",
 ];
-
-/** Master-Orb-Bild aus D-Splash (scharfe Glaskugel mit HDRI-Reflex) */
-const MASTER_ORB_SRC = "/media/hero-v2/kugeln-v2/master.png";
 
 export function PondExperience() {
   const reduceMotion = useReducedMotion();
@@ -354,12 +351,9 @@ export function PondExperience() {
               padding: 0,
             }}
           >
-            <img
-              src={MASTER_ORB_SRC}
-              alt=""
-              className="h-full w-full object-contain"
-              draggable={false}
-            />
+            {/* Master-Orb-Sprite ist UNSICHTBAR - die im Video eingebettete Kugel
+                bleibt sichtbar. Der Button ist nur Hover-/Klick-Hitbox. */}
+            <span className="sr-only">{heroPond.masterLink.label}</span>
           </motion.button>
         )}
       </AnimatePresence>
