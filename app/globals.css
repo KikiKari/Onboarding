@@ -108,3 +108,11 @@ button, input, textarea { font: inherit; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Header ausblenden solange PondExperience aktiv ist (data-hero-immersive) */
+body[data-hero-immersive="true"] > header,
+body[data-hero-immersive="true"] header[data-site-header] {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease-out;
+}

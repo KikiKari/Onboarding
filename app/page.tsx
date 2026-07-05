@@ -4,15 +4,11 @@ import { Reveal } from "@/components/motion/reveal";
 import { ContactForm } from "@/components/site/contact-form";
 import { Footer } from "@/components/site/footer";
 import { Header } from "@/components/site/header";
-import { NarrationToggle } from "@/components/site/narration-toggle";
 import { PondExperience } from "@/components/site/pond-experience";
 import { ProjectList } from "@/components/site/project-list";
-import { RotatingHeadline } from "@/components/site/rotating-headline";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
-import { Hero } from "@/components/ui/hero";
 import { Section } from "@/components/ui/section";
 import { siteContent } from "@/content";
 
@@ -25,28 +21,17 @@ const iconPaths = {
 export default function Home() {
   return (
     <>
-      <Header />
-      <main>
-        <Hero id="top" className="min-h-[clamp(43rem,92vh,64rem)] bg-[linear-gradient(165deg,#e8ebde_0%,#eee9dc_55%,#f6f2e9_100%)]">
-          <Image src="/media/hero-meadow.png" alt="" fill priority className="object-cover opacity-75" sizes="100vw" />
-          <div className="absolute inset-0 bg-[radial-gradient(62%_56%_at_52%_42%,rgba(248,246,239,.74),rgba(248,246,239,.16)_55%,transparent_76%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_top,var(--bg),transparent_36%)]" />
-          <Container className="relative z-10 flex flex-col gap-8 py-[var(--space-20)]">
-            <Reveal><Badge>{siteContent.hero.badge}</Badge></Reveal>
-            <Reveal delay={0.06}>
-              <h1 className="display m-0 max-w-[18ch] text-[clamp(2.75rem,6vw,5rem)] leading-none">
-                {siteContent.hero.prefix} <RotatingHeadline words={siteContent.hero.verbs} />
-              </h1>
-            </Reveal>
-            <Reveal delay={0.16} className="flex flex-col items-center gap-5 text-center">
-              <p className="m-0 max-w-[56ch] text-[clamp(1rem,1.5vw,1.1875rem)] leading-relaxed text-ink-2">{siteContent.hero.subline}</p>
-            </Reveal>
-            <Reveal delay={0.08}><PondExperience /></Reveal>
-          </Container>
-          <NarrationToggle />
-        </Hero>
+      {/* PondExperience nutzt position:fixed und füllt den gesamten Viewport (100vh).
+          Um Platz für den Scroll darunter zu schaffen, folgt ein Spacer mit 100vh Höhe.
+          Der Header ist per body[data-hero-immersive] CSS verborgen solange die
+          Pond-Experience mounted ist — er kommt erst nach Scroll zurück. */}
+      <PondExperience />
+      <div aria-hidden="true" style={{ height: "100vh" }} />
 
-        <Section id="funktionen">
+      <Header />
+      <main className="relative z-10 bg-[var(--bg)]">
+
+        <Section id="funktionen" className="pt-24">
           <Container>
             <Reveal className="mb-12 max-w-[60ch]">
               <span className="eyebrow text-muted">Funktionen</span>
