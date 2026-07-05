@@ -50,23 +50,24 @@ interface OrbPosition {
 const POND_CONFIG = {
   hero: "/media/hero-v2/videos/pond-idle-A.mp4",
   splash: "/media/hero-v2/videos/rolling-splash-v3.mp4",
-  // Master-Orb auf dem LINKEN Blatt - exakt über der Video-Kugel positioniert.
-  // Aus Screenshot mit 16:9 Stage exakt gemessen: Video-Kugel bei 32% x / 51% y.
-  // Kleinere Hitbox (140px cap) damit sie nicht über die Kugelgrenzen hinausragt.
-  masterPosition: { left: "32%", top: "51%", size: "clamp(90px, 8vw, 140px)" },
-  // 9 Kugeln auf dem RECHTEN Blatt - unregelmäßig verteilt in Ellipse.
-  // Blatt-Ellipse: Zentrum (73, 55), Halbachsen (17, 12) -> alle 9 Kugeln sicher DRAUF.
-  // Sortiert von hinten nach vorne (y-aufsteigend) für korrekte visuelle Tiefe.
+  // Master-Orb auf dem LINKEN Blatt - aus HD-Screenshot (1425x683 Stage) exakt
+  // pixel-genau gemessen: Video-Kugel-Zentrum bei 32.3% x / 47.8% y.
+  // Hitbox 120px cap - deckt genau die visuelle Kugel ohne Rand.
+  masterPosition: { left: "32.3%", top: "47.8%", size: "clamp(85px, 7.5vw, 120px)" },
+  // 9 Kugeln unregelmäßig über das RECHTE Blatt verteilt.
+  // Blatt-Grenzen (aus HD-Screenshot): x 54-92.6%, y 42.2-73.4%.
+  // Ellipse Zentrum (73.3, 57.8), Halbachsen (17, 13) - alle Kugeln 100% DRAUF.
+  // Sortiert von hinten (y niedrig, kleiner) nach vorne (y hoch, größer).
   orbLayout: [
-    { x: 76.1, y: 44.6, scale: 0.38, z: 2 },
-    { x: 64.1, y: 48.9, scale: 0.42, z: 3 },
-    { x: 86.6, y: 51.4, scale: 0.40, z: 2 },
-    { x: 76.0, y: 52.0, scale: 0.48, z: 4 },
-    { x: 69.5, y: 55.4, scale: 0.52, z: 5 },
-    { x: 62.3, y: 57.0, scale: 0.46, z: 4 },
-    { x: 87.8, y: 58.3, scale: 0.55, z: 6 },
-    { x: 79.3, y: 58.9, scale: 0.50, z: 5 },
-    { x: 72.7, y: 65.4, scale: 0.58, z: 7 },
+    { x: 79.1, y: 47.9, scale: 0.38, z: 2 },
+    { x: 67.3, y: 48.1, scale: 0.42, z: 3 },
+    { x: 86.0, y: 51.8, scale: 0.40, z: 2 },
+    { x: 74.8, y: 53.9, scale: 0.48, z: 4 },
+    { x: 68.4, y: 56.4, scale: 0.52, z: 5 },
+    { x: 62.3, y: 59.7, scale: 0.46, z: 4 },
+    { x: 83.8, y: 62.9, scale: 0.55, z: 6 },
+    { x: 70.9, y: 66.3, scale: 0.50, z: 5 },
+    { x: 77.8, y: 68.3, scale: 0.58, z: 7 },
   ] as OrbPosition[],
 } as const;
 
