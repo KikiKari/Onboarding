@@ -54,55 +54,24 @@ const POND_CONFIG = {
   // Kugel-Zentrum bei 32% x / 57.6% y. Kugel-Durchmesser ~12.5vw.
   masterPosition: { left: "32%", top: "57.6%", size: "clamp(150px, 12vw, 210px)" },
   // 9 Kugeln in 3D-Perspektive auf dem RECHTEN Blatt (v2).
-  // Rechtes Blatt: x 58-92%, y 53-81%. Zentrum (75, 67), enger fuer Kugel-Bett.
-  // Kamera-Perspektive: hinten klein, vorne gross.
+  // Rechtes Blatt: x 58-92%, y 53-81%. Zentrum (75, 67).
+  // Alle Kugeln bleiben INNERHALB y 58-70% - kein Ueberhang am unteren Blattrand.
+  // Kamera-Perspektive: hinten klein/hoch, vorne gross/tief - alle sicher im Blatt.
   orbLayout: [
-    // HINTEN (y 58-59, klein)
-    { x: 69.0, y: 58.0, scale: 0.22, z: 2 },
-    { x: 77.0, y: 57.5, scale: 0.24, z: 3 },
-    { x: 84.0, y: 59.0, scale: 0.22, z: 2 },
-    // MITTE (y 65-67, mittelgross)
-    { x: 66.0, y: 66.5, scale: 0.30, z: 4 },
-    { x: 74.5, y: 66.0, scale: 0.34, z: 5 },
-    { x: 82.5, y: 66.5, scale: 0.28, z: 4 },
-    // VORNE (y 72-75, gross)
-    { x: 68.5, y: 73.0, scale: 0.40, z: 6 },
-    { x: 76.5, y: 74.0, scale: 0.46, z: 8 },
-    { x: 84.0, y: 72.5, scale: 0.38, z: 6 },
+    // HINTEN (y 59, klein)
+    { x: 69.0, y: 58.5, scale: 0.20, z: 2 },
+    { x: 76.0, y: 58.0, scale: 0.22, z: 3 },
+    { x: 83.0, y: 59.0, scale: 0.20, z: 2 },
+    // MITTE (y 63-64, mittelgross)
+    { x: 66.5, y: 63.5, scale: 0.26, z: 4 },
+    { x: 74.0, y: 63.0, scale: 0.30, z: 5 },
+    { x: 81.5, y: 63.5, scale: 0.25, z: 4 },
+    // VORNE (y 68-69, gross - noch VOR dem Blattrand)
+    { x: 69.0, y: 68.5, scale: 0.32, z: 6 },
+    { x: 76.0, y: 69.0, scale: 0.36, z: 8 },
+    { x: 83.0, y: 68.0, scale: 0.30, z: 6 },
   ] as OrbPosition[],
 } as const;
-
-/**
- * Regen-Tropfen Positionen: 24 zufaellige aber deterministische Punkte ueber
- * das ganze Bild verteilt, mit staggered delays und durations damit sie sich
- * nicht synchron abspielen sondern kontinuierlich überall im Bild fallen.
- */
-const RAIN_DROPS = [
-  { x: 12, y: 78, size: 4, delay: 0.0, duration: 3.2 },
-  { x: 25, y: 62, size: 3, delay: 0.8, duration: 3.8 },
-  { x: 38, y: 85, size: 5, delay: 1.5, duration: 3.4 },
-  { x: 48, y: 55, size: 3, delay: 2.1, duration: 4.0 },
-  { x: 55, y: 72, size: 4, delay: 0.4, duration: 3.6 },
-  { x: 62, y: 40, size: 3, delay: 2.8, duration: 3.9 },
-  { x: 72, y: 78, size: 4, delay: 1.2, duration: 3.3 },
-  { x: 82, y: 45, size: 3, delay: 3.2, duration: 4.1 },
-  { x: 92, y: 68, size: 4, delay: 0.6, duration: 3.7 },
-  { x: 18, y: 45, size: 3, delay: 3.5, duration: 3.5 },
-  { x: 33, y: 25, size: 4, delay: 1.9, duration: 4.2 },
-  { x: 50, y: 88, size: 5, delay: 2.4, duration: 3.1 },
-  { x: 68, y: 60, size: 3, delay: 0.2, duration: 3.9 },
-  { x: 88, y: 30, size: 4, delay: 2.6, duration: 3.8 },
-  { x: 8, y: 55, size: 3, delay: 1.4, duration: 4.0 },
-  { x: 42, y: 68, size: 3, delay: 3.0, duration: 3.4 },
-  { x: 58, y: 20, size: 4, delay: 0.9, duration: 4.3 },
-  { x: 78, y: 85, size: 5, delay: 2.0, duration: 3.2 },
-  { x: 95, y: 82, size: 3, delay: 1.7, duration: 3.6 },
-  { x: 15, y: 30, size: 4, delay: 2.3, duration: 3.9 },
-  { x: 45, y: 15, size: 3, delay: 0.3, duration: 4.1 },
-  { x: 65, y: 90, size: 5, delay: 3.4, duration: 3.3 },
-  { x: 85, y: 62, size: 4, delay: 0.7, duration: 3.7 },
-  { x: 28, y: 50, size: 3, delay: 2.7, duration: 4.0 },
-];
 
 /** Neue Glaskugeln V2 via gpt-image-2 mit master.png als Referenz - konsistenter Look mit Master */
 const ORB_FILES = [
@@ -270,49 +239,9 @@ export function PondExperience() {
         <source src={config.hero} type="video/mp4" />
       </video>
 
-      {/* LAYER 1b: Regen-Overlay - 24 zufaellig positionierte Tropfen die auf
-          die Wasseroberflaeche fallen und Miniwellen ausloesen. Endless loop
-          mit unterschiedlichen delays und durations pro Tropfen. */}
-      {!splashActive && phase !== "click-splash" && (
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 pointer-events-none overflow-hidden"
-          style={{ zIndex: 5, mixBlendMode: "screen" }}
-        >
-          {RAIN_DROPS.map((d, i) => (
-            <div
-              key={`rain-${i}`}
-              className="pond-raindrop"
-              style={{
-                position: "absolute",
-                left: `${d.x}%`,
-                top: `${d.y}%`,
-                width: `${d.size}px`,
-                height: `${d.size}px`,
-                borderRadius: "50%",
-                animationDelay: `${d.delay}s`,
-                animationDuration: `${d.duration}s`,
-              }}
-            />
-          ))}
-          <style>{`
-            @keyframes pond-drop {
-              0% { opacity: 0; transform: scale(0.2); box-shadow: 0 0 0 0 rgba(255,255,255,0); }
-              10% { opacity: 0.9; transform: scale(1); }
-              45% { opacity: 0.7; transform: scale(2.5); box-shadow: 0 0 0 6px rgba(255,255,255,0.35), 0 0 0 12px rgba(255,255,255,0.15); }
-              80% { opacity: 0.3; transform: scale(5); box-shadow: 0 0 0 16px rgba(255,255,255,0.1), 0 0 0 26px rgba(255,255,255,0); }
-              100% { opacity: 0; transform: scale(7); box-shadow: 0 0 0 32px rgba(255,255,255,0); }
-            }
-            .pond-raindrop {
-              background: radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(220,240,255,0.5) 50%, rgba(255,255,255,0) 80%);
-              animation-name: pond-drop;
-              animation-iteration-count: infinite;
-              animation-timing-function: ease-out;
-              filter: blur(0.5px);
-            }
-          `}</style>
-        </div>
-      )}
+      {/* CSS-Regen entfernt: Video pond-idle-v2 hat bereits sichtbaren Regen
+          mit realistischer Wasser-Interaktion. Der CSS-Overlay hat nur den
+          Look mit unrealistischen Lichtpunkten gestoert. */}
 
       {/* LAYER 2: Splash-Video (Overlay, positioniert wo der Master lag).
           Startet OHNE Fade-in - Video zeigt selbst die rollende Kugel, also
@@ -476,36 +405,23 @@ export function PondExperience() {
                 onClick={() => onProjectClick(project)}
                 aria-label={`${project.title} — ${project.platform}`}
                 className="focus-ring absolute cursor-pointer"
-                // Kugeln steigen AUS DEM WASSER auf: starten unter dem Blatt
-                // (top +8%), mit scale 0 und rise-Effekt. Wenn im Ruhezustand:
-                // subtiles Schaukeln synchron mit Wasserwellen.
-                initial={{ opacity: 0, left: `${pos.x}%`, top: `${pos.y + 12}%`, scale: 0.1, x: "-50%", y: "-50%" }}
+                // Kugeln steigen einmalig AUS DEM WASSER auf und bleiben dann
+                // still liegen. Keine Idle-Animation - stoerte die Sicht auf
+                // die Wasserbewegung im Video dahinter.
+                initial={{ opacity: 0, left: `${pos.x}%`, top: `${pos.y + 10}%`, scale: 0.1, x: "-50%", y: "-50%" }}
                 animate={{
                   opacity: 1,
                   left: `${pos.x}%`,
-                  top: isFocused
-                    ? `${pos.y}%`
-                    : [`${pos.y}%`, `${pos.y - 0.4}%`, `${pos.y + 0.3}%`, `${pos.y}%`],
+                  top: `${pos.y}%`,
                   x: "-50%",
                   y: "-50%",
                   scale: isFocused ? pos.scale * 1.2 : pos.scale,
                 }}
                 exit={{ opacity: 0, scale: 0.1, x: "-50%", y: "-50%" }}
                 transition={{
-                  // Aufsteigen dauert 900ms mit staggered delay pro Kugel (idx)
                   duration: isFocused ? 0.35 : 0.9,
                   delay: isFocused ? 0 : idx * 0.08,
                   ease: [0.16, 1, 0.3, 1],
-                  // Nach dem Aufstieg: sanftes Schaukeln (endless loop)
-                  top: isFocused
-                    ? { duration: 0.35 }
-                    : {
-                        duration: 4 + idx * 0.3,
-                        delay: 1 + idx * 0.08,
-                        repeat: Infinity,
-                        repeatType: "loop" as const,
-                        ease: "easeInOut",
-                      },
                 }}
                 style={{
                   // Doppelt so gross wie vorher (80-160 -> 160-320) - Kugeln wie der Master.
