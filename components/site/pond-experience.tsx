@@ -50,10 +50,10 @@ interface OrbPosition {
 const POND_CONFIG = {
   hero: "/media/hero-v2/videos/pond-idle-A.mp4",
   splash: "/media/hero-v2/videos/rolling-splash-v3.mp4",
-  // Master-Orb auf dem LINKEN Blatt - aus HD-Screenshot (1425x683 Stage) exakt
-  // pixel-genau gemessen: Video-Kugel-Zentrum bei 32.3% x / 47.8% y.
-  // Hitbox 120px cap - deckt genau die visuelle Kugel ohne Rand.
-  masterPosition: { left: "32.3%", top: "47.8%", size: "clamp(85px, 7.5vw, 120px)" },
+  // Master-Orb auf dem LINKEN Blatt - aus HD-Screenshot (1541x735) exakt gemessen:
+  // Video-Kugel-Zentrum bei 31.5% x / 48.6% y im 16:9 Stage.
+  // Hitbox 140px cap - deckt die visuelle Kugel genau ab.
+  masterPosition: { left: "31.5%", top: "48.6%", size: "clamp(100px, 9vw, 140px)" },
   // 9 Kugeln unregelmäßig über das RECHTE Blatt verteilt.
   // Blatt-Grenzen (aus HD-Screenshot): x 54-92.6%, y 42.2-73.4%.
   // Ellipse Zentrum (73.3, 57.8), Halbachsen (17, 13) - alle Kugeln 100% DRAUF.
@@ -228,7 +228,9 @@ export function PondExperience() {
         <source src={config.hero} type="video/mp4" />
       </video>
 
-      {/* LAYER 2: Splash-Video (Overlay, positioniert wo der Master lag) */}
+      {/* LAYER 2: Splash-Video (Overlay, positioniert wo der Master lag).
+          Startet OHNE Fade-in - Video zeigt selbst die rollende Kugel, also
+          soll der Klick direkt in die Rolling-Sequenz uebergehen. */}
       <AnimatePresence>
         {showSplash && (
           <motion.video
@@ -236,10 +238,10 @@ export function PondExperience() {
             muted
             playsInline
             autoPlay
-            initial={{ opacity: 0 }}
+            initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="absolute inset-0 z-30 h-full w-full object-fill"
             aria-hidden="true"
           >
@@ -260,19 +262,19 @@ export function PondExperience() {
             onBlur={() => setMasterHovered(false)}
             aria-label={heroPond.masterLink.label}
             className="focus-ring absolute z-20 cursor-pointer"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, scale: masterHovered ? 1.05 : 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0, x: "-50%", y: "-50%" }}
+            animate={{ opacity: 1, x: "-50%", y: "-50%", scale: masterHovered ? 1.05 : 1 }}
+            exit={{ opacity: 0, x: "-50%", y: "-50%", transition: { duration: 0 } }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             style={{
               left: config.masterPosition.left,
               top: config.masterPosition.top,
               width: config.masterPosition.size,
               height: config.masterPosition.size,
-              transform: "translate(-50%, -50%)",
               background: "transparent",
               border: "none",
               padding: 0,
+              transformOrigin: "center center",
             }}
           >
             {/* Master-Orb-Button: reine Hitbox für Klick/Hover.
@@ -344,14 +346,16 @@ export function PondExperience() {
                 onClick={() => onProjectClick(project)}
                 aria-label={`${project.title} — ${project.platform}`}
                 className="focus-ring absolute cursor-pointer"
-                initial={{ opacity: 0, left: "50%", top: "75%", scale: 0.1 }}
+                initial={{ opacity: 0, left: "32.3%", top: "47.8%", scale: 0.1, x: "-50%", y: "-50%" }}
                 animate={{
                   opacity: 1,
                   left: `${pos.x}%`,
                   top: `${pos.y}%`,
+                  x: "-50%",
+                  y: "-50%",
                   scale: isFocused ? pos.scale * 1.2 : pos.scale,
                 }}
-                exit={{ opacity: 0, scale: 0.1 }}
+                exit={{ opacity: 0, scale: 0.1, x: "-50%", y: "-50%" }}
                 transition={{
                   duration: phase === "distributed" && !isFocused ? 0.4 : 0.3,
                   delay: 0,
@@ -360,11 +364,11 @@ export function PondExperience() {
                 style={{
                   width: "clamp(80px, 10vw, 160px)",
                   height: "clamp(80px, 10vw, 160px)",
-                  transform: "translate(-50%, -50%)",
                   background: "transparent",
                   border: "none",
                   padding: 0,
                   zIndex: 10 + pos.z,
+                  transformOrigin: "center center",
                 }}
               >
                 <img
