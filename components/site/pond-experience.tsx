@@ -49,34 +49,35 @@ interface OrbPosition {
  */
 const POND_CONFIG = {
   hero: "/media/hero-v2/videos/pond-idle-A.mp4",
-  splash: "/media/hero-v2/videos/rolling-splash-v2.mp4",
-  // Master-Orb auf dem LINKEN Blatt (Blatt bei x ~15-58%, y ~55-95%)
-  masterPosition: { left: "38%", top: "68%", size: "clamp(110px, 13vw, 210px)" },
-  // 9 Kugeln kompakt auf dem RECHTEN Blatt (Blatt bei x ~55-92%, y ~62-92%)
+  splash: "/media/hero-v2/videos/rolling-splash-v3.mp4",
+  // Master-Orb auf dem LINKEN Blatt - exakt über der Video-Kugel positioniert
+  // Video-Kugel bei ca. 34% x, 49% y (aus 1280x720 idle-frame ausgemessen)
+  masterPosition: { left: "34%", top: "49%", size: "clamp(140px, 14vw, 220px)" },
+  // 9 Kugeln auf dem RECHTEN Blatt (x ~53-92%, y ~50-80% ausgemessen)
   orbLayout: [
-    { x: 62, y: 70, scale: 0.5, z: 2 },
-    { x: 72, y: 68, scale: 0.55, z: 3 },
-    { x: 84, y: 70, scale: 0.5, z: 2 },
-    { x: 62, y: 76, scale: 0.6, z: 4 },
-    { x: 73, y: 75, scale: 0.7, z: 6 },
-    { x: 85, y: 76, scale: 0.6, z: 4 },
-    { x: 66, y: 82, scale: 0.55, z: 3 },
-    { x: 78, y: 82, scale: 0.65, z: 5 },
-    { x: 88, y: 82, scale: 0.55, z: 3 },
+    { x: 60, y: 55, scale: 0.5, z: 2 },
+    { x: 72, y: 53, scale: 0.55, z: 3 },
+    { x: 84, y: 55, scale: 0.5, z: 2 },
+    { x: 58, y: 63, scale: 0.6, z: 4 },
+    { x: 72, y: 63, scale: 0.7, z: 6 },
+    { x: 86, y: 63, scale: 0.6, z: 4 },
+    { x: 62, y: 72, scale: 0.55, z: 3 },
+    { x: 75, y: 73, scale: 0.65, z: 5 },
+    { x: 87, y: 72, scale: 0.55, z: 3 },
   ] as OrbPosition[],
 } as const;
 
-/** Neue Glaskugeln von Nano Banana Pro mit dezentem Farbkern */
+/** Neue Glaskugeln V2 via gpt-image-2 mit master.png als Referenz - konsistenter Look mit Master */
 const ORB_FILES = [
-  "glass-orbs/orb-glass-01-teal.png",
-  "glass-orbs/orb-glass-02-copper.png",
-  "glass-orbs/orb-glass-03-amber.png",
-  "glass-orbs/orb-glass-04-emerald.png",
-  "glass-orbs/orb-glass-05-clear.png",
-  "glass-orbs/orb-glass-06-rose.png",
-  "glass-orbs/orb-glass-07-gold.png",
-  "glass-orbs/orb-glass-08-lavender.png",
-  "glass-orbs/orb-glass-09-ivory.png",
+  "glass-orbs-v2/orb-01-teal.png",
+  "glass-orbs-v2/orb-02-copper.png",
+  "glass-orbs-v2/orb-03-amber.png",
+  "glass-orbs-v2/orb-04-emerald.png",
+  "glass-orbs-v2/orb-05-clear.png",
+  "glass-orbs-v2/orb-06-rose.png",
+  "glass-orbs-v2/orb-07-gold.png",
+  "glass-orbs-v2/orb-08-lavender.png",
+  "glass-orbs-v2/orb-09-ivory.png",
 ];
 
 export function PondExperience() {
@@ -137,21 +138,24 @@ export function PondExperience() {
 
     setMasterHovered(false);
 
-    // Phase 1: Master beginnt zu rollen (Hitbox animiert weg vom Blatt)
+    // Neuer Story-Flow mit 5s Splash-Video (rolling-splash-v3):
+    //  0ms:    Master fängt an zu rollen (Sprite-Animation)
+    //  600ms:  Splash-Video-Overlay startet (peak ~1.5s in Video)
+    //  4200ms: 9 Kugeln beginnen einzublenden (unter noch aktivem Splash)
+    //  5000ms: Splash-Video zu Ende, fadet aus
+    //  6000ms: Alles ist visible (Idle-Video wieder frei, Kugeln oben)
+
     setPhase("rolling");
 
-    // Phase 2: Nach 800ms - Master erreicht Wasser, Splash-Overlay startet
     const t1 = setTimeout(() => {
       setSplashActive(true);
       setPhase("splashing");
       setTimeout(() => splashVideoRef.current?.play().catch(() => {}), 30);
-    }, 800);
+    }, 600);
 
-    // Phase 3: Bei 2800ms - Kugeln beginnen zu erscheinen (noch unter Splash)
-    const t2 = setTimeout(() => setPhase("distributed"), 2800);
+    const t2 = setTimeout(() => setPhase("distributed"), 4200);
 
-    // Phase 4: Bei 4500ms - Splash langsam ausblenden
-    const t3 = setTimeout(() => setSplashActive(false), 4500);
+    const t3 = setTimeout(() => setSplashActive(false), 5000);
 
     timersRef.current.push(t1, t2, t3);
   }
