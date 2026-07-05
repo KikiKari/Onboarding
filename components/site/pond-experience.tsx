@@ -51,22 +51,22 @@ const POND_CONFIG = {
   hero: "/media/hero-v2/videos/pond-idle-A.mp4",
   splash: "/media/hero-v2/videos/rolling-splash-v3.mp4",
   // Master-Orb auf dem LINKEN Blatt - exakt über der Video-Kugel positioniert.
-  // Video-Kugel bei 32% x / 48.6% y (aus pond-idle-A.mp4 1280x720 ausgemessen).
-  // Positionen sind relativ zum inneren 16:9 pond-stage-Container, nicht zum Viewport.
-  masterPosition: { left: "32%", top: "48.5%", size: "clamp(110px, 10vw, 180px)" },
-  // 9 Kugeln auf dem RECHTEN Blatt.
-  // Rechtes Blatt im Video: x 49.6-89.8%, y 42.4-77.8%.
-  // Kompaktes 3x3 Gitter mit Rand-Puffer: x 58-83, y 52-72 - alle sicher im Blatt.
+  // Aus Screenshot mit 16:9 Stage exakt gemessen: Video-Kugel bei 32% x / 51% y.
+  // Kleinere Hitbox (140px cap) damit sie nicht über die Kugelgrenzen hinausragt.
+  masterPosition: { left: "32%", top: "51%", size: "clamp(90px, 8vw, 140px)" },
+  // 9 Kugeln auf dem RECHTEN Blatt - unregelmäßig verteilt in Ellipse.
+  // Blatt-Ellipse: Zentrum (73, 55), Halbachsen (17, 12) -> alle 9 Kugeln sicher DRAUF.
+  // Sortiert von hinten nach vorne (y-aufsteigend) für korrekte visuelle Tiefe.
   orbLayout: [
-    { x: 58, y: 52, scale: 0.4, z: 2 },
-    { x: 70, y: 52, scale: 0.45, z: 2 },
-    { x: 83, y: 52, scale: 0.4, z: 2 },
-    { x: 58, y: 62, scale: 0.5, z: 5 },
-    { x: 70, y: 62, scale: 0.55, z: 6 },
-    { x: 83, y: 62, scale: 0.5, z: 5 },
-    { x: 58, y: 72, scale: 0.45, z: 3 },
-    { x: 70, y: 72, scale: 0.5, z: 3 },
-    { x: 83, y: 72, scale: 0.45, z: 3 },
+    { x: 76.1, y: 44.6, scale: 0.38, z: 2 },
+    { x: 64.1, y: 48.9, scale: 0.42, z: 3 },
+    { x: 86.6, y: 51.4, scale: 0.40, z: 2 },
+    { x: 76.0, y: 52.0, scale: 0.48, z: 4 },
+    { x: 69.5, y: 55.4, scale: 0.52, z: 5 },
+    { x: 62.3, y: 57.0, scale: 0.46, z: 4 },
+    { x: 87.8, y: 58.3, scale: 0.55, z: 6 },
+    { x: 79.3, y: 58.9, scale: 0.50, z: 5 },
+    { x: 72.7, y: 65.4, scale: 0.58, z: 7 },
   ] as OrbPosition[],
 } as const;
 
@@ -141,26 +141,23 @@ export function PondExperience() {
 
     setMasterHovered(false);
 
-    // Neuer Story-Flow mit 5s Splash-Video (rolling-splash-v3):
-    //  0ms:    Master fängt an zu rollen (Sprite-Animation)
-    //  600ms:  Splash-Video-Overlay startet (peak ~1.5s in Video)
+    // Story-Flow: das Splash-Video zeigt selbst die rollende Kugel, also
+    // sofort einblenden - keine sichtbare Wartezeit zwischen Klick und Rollen.
+    //  0ms:    Master-Hitbox verschwindet, Splash-Video startet direkt
     //  4200ms: 9 Kugeln beginnen einzublenden (unter noch aktivem Splash)
     //  5000ms: Splash-Video zu Ende, fadet aus
-    //  6000ms: Alles ist visible (Idle-Video wieder frei, Kugeln oben)
 
-    setPhase("rolling");
-
-    const t1 = setTimeout(() => {
-      setSplashActive(true);
-      setPhase("splashing");
-      setTimeout(() => splashVideoRef.current?.play().catch(() => {}), 30);
-    }, 600);
+    setPhase("splashing");
+    setSplashActive(true);
+    // Video sofort abspielen (nächster Frame - React hat den Ref bereits gerendert)
+    requestAnimationFrame(() => {
+      splashVideoRef.current?.play().catch(() => {});
+    });
 
     const t2 = setTimeout(() => setPhase("distributed"), 4200);
-
     const t3 = setTimeout(() => setSplashActive(false), 5000);
 
-    timersRef.current.push(t1, t2, t3);
+    timersRef.current.push(t2, t3);
   }
 
   // Projekt-Kugel klicken → Vollbild-Splash → Weiterleitung
