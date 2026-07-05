@@ -33,6 +33,26 @@ interface OrbPosition {
   z: number;
 }
 
+type VariantKey = "A" | "B";
+
+/**
+ * Zwei Video-Varianten zum Live-Vergleich:
+ * A = Video D als Hero (beste Kugel-Optik) + Video B Splash (Wasser-Dynamik) + Video C verteilt
+ * B = Video B als Hero (ruhige Kamera) + Video D Splash-Frames (Kugel-Details) + Video C verteilt
+ */
+const VARIANTS: Record<VariantKey, { hero: string; distributed: string; label: string }> = {
+  A: {
+    hero: "/media/hero-v2/videos/hero-loop-D.mp4",
+    distributed: "/media/hero-v2/videos/distributed-loop-C.mp4",
+    label: "A · D-Hero",
+  },
+  B: {
+    hero: "/media/hero-v2/videos/hero-loop-B.mp4",
+    distributed: "/media/hero-v2/videos/distributed-loop-C.mp4",
+    label: "B · B-Hero",
+  },
+};
+
 const ORB_FILES = [
   "orb-01-teal.png",
   "orb-02-copper.png",
@@ -72,6 +92,7 @@ export function PondExperience() {
   const [phase, setPhase] = useState<Phase>(reduceMotion ? "distributed" : "idle");
   const [focusedIdx, setFocusedIdx] = useState<number | null>(null);
   const [heroOpacity, setHeroOpacity] = useState(1);
+  const [variant, setVariant] = useState<VariantKey>("A");
   const clickSplashRef = useRef<HTMLVideoElement>(null);
   const splashVideoRef = useRef<HTMLVideoElement>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -156,8 +177,32 @@ export function PondExperience() {
       aria-label="Interaktiver Teich mit Projektkugeln"
       data-pond-phase={phase}
     >
-      {/* Layer 1: Loop-Video Hintergrund */}
+      {/* Variant-Toggle oben rechts (Live-Vergleich A/B) */}
+      <div
+        className="absolute right-4 top-4 z-[100] flex items-center gap-1 rounded-full border border-white/25 bg-black/50 p-1 backdrop-blur-md"
+        role="group"
+        aria-label="Video-Variante wählen"
+      >
+        {(Object.keys(VARIANTS) as VariantKey[]).map((key) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setVariant(key)}
+            aria-pressed={variant === key}
+            className={`rounded-full px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] transition-colors ${
+              variant === key
+                ? "bg-white text-black"
+                : "text-white/80 hover:text-white"
+            }`}
+          >
+            {VARIANTS[key].label}
+          </button>
+        ))}
+      </div>
+
+      {/* Layer 1: Loop-Video Hintergrund (Variante A oder B) */}
       <video
+        key={`hero-${variant}`}
         autoPlay
         muted
         loop
@@ -166,7 +211,7 @@ export function PondExperience() {
         className="absolute inset-0 h-full w-full object-cover"
         aria-hidden="true"
       >
-        <source src="/media/hero-v2/videos/pond-loop.mp4" type="video/mp4" />
+        <source src={VARIANTS[variant].hero} type="video/mp4" />
       </video>
 
       {/* Layer 2: Master-Splash-Video (bei Sequenz-Start) */}
