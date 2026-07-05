@@ -50,20 +50,19 @@ interface OrbPosition {
 const POND_CONFIG = {
   hero: "/media/hero-v2/videos/pond-idle-A.mp4",
   splash: "/media/hero-v2/videos/rolling-splash-v2.mp4",
-  // Master-Orb auf linkem Blatt
-  // Master-Orb auf dem linken Blatt (Blatt liegt bei x ~15-50%, y ~55-90%)
-  masterPosition: { left: "25%", top: "65%", size: "clamp(140px, 16vw, 260px)" },
-  // 9 Kugeln kompakt auf dem rechten Blatt (Blatt liegt bei x ~65-95%, y ~40-58%)
+  // Master-Orb auf dem linken Blatt (Blatt liegt bei x ~5-55%, y ~65-90%)
+  masterPosition: { left: "35%", top: "70%", size: "clamp(100px, 12vw, 190px)" },
+  // 9 Kugeln kompakt auf dem rechten Blatt (Blatt liegt bei x ~62-100%, y ~68-90%)
   orbLayout: [
-    { x: 72, y: 43, scale: 0.55, z: 2 },
-    { x: 78, y: 42, scale: 0.5, z: 2 },
-    { x: 85, y: 43, scale: 0.55, z: 2 },
-    { x: 70, y: 48, scale: 0.65, z: 4 },
-    { x: 78, y: 47, scale: 0.7, z: 6 },
-    { x: 87, y: 48, scale: 0.6, z: 4 },
-    { x: 74, y: 53, scale: 0.6, z: 3 },
-    { x: 82, y: 53, scale: 0.65, z: 5 },
-    { x: 78, y: 57, scale: 0.55, z: 3 },
+    { x: 72, y: 72, scale: 0.55, z: 2 },
+    { x: 80, y: 71, scale: 0.5, z: 2 },
+    { x: 88, y: 72, scale: 0.55, z: 2 },
+    { x: 70, y: 76, scale: 0.65, z: 4 },
+    { x: 80, y: 75, scale: 0.7, z: 6 },
+    { x: 90, y: 76, scale: 0.6, z: 4 },
+    { x: 74, y: 80, scale: 0.6, z: 3 },
+    { x: 84, y: 80, scale: 0.65, z: 5 },
+    { x: 79, y: 83, scale: 0.55, z: 3 },
   ] as OrbPosition[],
 } as const;
 
@@ -261,15 +260,17 @@ export function PondExperience() {
           >
             {/* Master-Orb-Sprite:
                 - Idle/Hover: UNSICHTBAR (die im Video eingebettete Kugel ist sichtbar)
-                - Rolling: SICHTBAR (rollt weg vom Blatt, Video-Kugel bleibt scheinbar)
-                Bei rolling-Start wird das Sprite fade-in und rollt danach weg. */}
-            <span className="sr-only">{heroPond.masterLink.label}</span>
+                - Rolling: SICHTBAR (rollt weg vom Blatt) */}
+            <span className="sr-only" style={{ pointerEvents: "none" }}>
+              {heroPond.masterLink.label}
+            </span>
             {phase === "rolling" && (
               <img
                 src="/media/hero-v2/kugeln-v2/master.png"
                 alt=""
                 className="absolute inset-0 h-full w-full object-contain"
                 draggable={false}
+                style={{ pointerEvents: "none" }}
               />
             )}
           </motion.button>
