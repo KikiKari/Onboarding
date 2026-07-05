@@ -52,22 +52,23 @@ const POND_CONFIG = {
   splash: "/media/hero-v2/videos/rolling-splash-v3.mp4",
   // Master-Orb auf dem LINKEN Blatt - aus HD-Screenshot (1541x735) exakt gemessen:
   // Video-Kugel-Zentrum bei 31.5% x / 48.6% y im 16:9 Stage.
-  // Hitbox 140px cap - deckt die visuelle Kugel genau ab.
-  masterPosition: { left: "31.5%", top: "48.6%", size: "clamp(100px, 9vw, 140px)" },
-  // 9 Kugeln unregelmäßig über das RECHTE Blatt verteilt.
-  // Blatt-Grenzen (aus HD-Screenshot): x 54-92.6%, y 42.2-73.4%.
-  // Ellipse Zentrum (73.3, 57.8), Halbachsen (17, 13) - alle Kugeln 100% DRAUF.
+  // Hitbox 180px cap - deckt die volle sichtbare Video-Kugel (Durchmesser ~180px).
+  masterPosition: { left: "31.5%", top: "48.6%", size: "clamp(160px, 13vw, 220px)" },
+  // 9 grosse Kugeln unregelmäßig auf dem RECHTEN Blatt verteilt (wie Perlen die auf
+  // dem Blatt ruhen). Blatt-Grenzen: x 54-92.6%, y 42.2-73.4%.
+  // Ellipse Zentrum (73.3, 57.0), Halbachsen (17, 12.5) - alle Kugeln 100% DRAUF.
+  // Basis-Groesse in Style: clamp(160,20vw,300)px, scale multipliziert.
   // Sortiert von hinten (y niedrig, kleiner) nach vorne (y hoch, größer).
   orbLayout: [
-    { x: 79.1, y: 47.9, scale: 0.38, z: 2 },
-    { x: 67.3, y: 48.1, scale: 0.42, z: 3 },
-    { x: 86.0, y: 51.8, scale: 0.40, z: 2 },
-    { x: 74.8, y: 53.9, scale: 0.48, z: 4 },
-    { x: 68.4, y: 56.4, scale: 0.52, z: 5 },
-    { x: 62.3, y: 59.7, scale: 0.46, z: 4 },
-    { x: 83.8, y: 62.9, scale: 0.55, z: 6 },
-    { x: 70.9, y: 66.3, scale: 0.50, z: 5 },
-    { x: 77.8, y: 68.3, scale: 0.58, z: 7 },
+    { x: 68.6, y: 45.5, scale: 0.28, z: 2 },
+    { x: 74.6, y: 47.4, scale: 0.32, z: 3 },
+    { x: 82.6, y: 53.6, scale: 0.30, z: 2 },
+    { x: 76.7, y: 55.0, scale: 0.36, z: 4 },
+    { x: 62.7, y: 55.6, scale: 0.40, z: 5 },
+    { x: 83.4, y: 59.3, scale: 0.34, z: 4 },
+    { x: 73.9, y: 63.1, scale: 0.45, z: 6 },
+    { x: 68.0, y: 67.2, scale: 0.40, z: 5 },
+    { x: 76.7, y: 68.6, scale: 0.50, z: 7 },
   ] as OrbPosition[],
 } as const;
 
@@ -91,6 +92,7 @@ export function PondExperience() {
   const [heroOpacity, setHeroOpacity] = useState(1);
   const [masterHovered, setMasterHovered] = useState(false);
   const [splashActive, setSplashActive] = useState(false);
+  const [lightBurst, setLightBurst] = useState(false);
   const splashVideoRef = useRef<HTMLVideoElement>(null);
   const clickSplashRef = useRef<HTMLVideoElement>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -142,23 +144,33 @@ export function PondExperience() {
 
     setMasterHovered(false);
 
-    // Story-Flow: das Splash-Video zeigt selbst die rollende Kugel, also
-    // sofort einblenden - keine sichtbare Wartezeit zwischen Klick und Rollen.
-    //  0ms:    Master-Hitbox verschwindet, Splash-Video startet direkt
-    //  4200ms: 9 Kugeln beginnen einzublenden (unter noch aktivem Splash)
-    //  5000ms: Splash-Video zu Ende, fadet aus
+    // Story-Flow mit Lichteffekt-Ueberleitung:
+    //   0ms:    Lichtblitz aus dem Orb-Zentrum, expandiert radial
+    //  180ms:  Splash-Video startet unter dem noch fadenden Lichtblitz
+    //  400ms:  Lichtblitz voellig ausgeblendet, nur noch Splash-Video sichtbar
+    // 4200ms:  9 Kugeln beginnen einzublenden (unter noch aktivem Splash)
+    // 5000ms:  Splash-Video zu Ende, fadet aus
 
+    // Lichtblitz sofort ausloesen (blendet ueber den Master-Klickpunkt)
+    setLightBurst(true);
     setPhase("splashing");
-    setSplashActive(true);
-    // Video sofort abspielen (nächster Frame - React hat den Ref bereits gerendert)
-    requestAnimationFrame(() => {
-      splashVideoRef.current?.play().catch(() => {});
-    });
 
-    const t2 = setTimeout(() => setPhase("distributed"), 4200);
-    const t3 = setTimeout(() => setSplashActive(false), 5000);
+    // Splash-Video parallel starten (waehrend Lichtblitz noch sichtbar ist,
+    // dahinter wird das Video-Rolling bereits ausgeloest)
+    const t1 = setTimeout(() => {
+      setSplashActive(true);
+      requestAnimationFrame(() => {
+        splashVideoRef.current?.play().catch(() => {});
+      });
+    }, 180);
 
-    timersRef.current.push(t2, t3);
+    // Lichtblitz nach 400ms komplett weg
+    const t2 = setTimeout(() => setLightBurst(false), 400);
+
+    const t3 = setTimeout(() => setPhase("distributed"), 4200);
+    const t4 = setTimeout(() => setSplashActive(false), 5000);
+
+    timersRef.current.push(t1, t2, t3, t4);
   }
 
   // Projekt-Kugel klicken → Vollbild-Splash → Weiterleitung
@@ -287,6 +299,33 @@ export function PondExperience() {
         )}
       </AnimatePresence>
 
+      {/* LAYER 4b: Lichtblitz beim Klick - expandiert radial aus dem Orb-Zentrum
+          und blendet den Uebergang zum Splash-Video ueber (kein sichtbares Ruckeln). */}
+      <AnimatePresence>
+        {lightBurst && (
+          <motion.div
+            key="lightburst"
+            aria-hidden="true"
+            className="absolute z-25 pointer-events-none"
+            initial={{ opacity: 0, scale: 0.3, x: "-50%", y: "-50%" }}
+            animate={{ opacity: [0, 1, 0.9, 0], scale: [0.3, 1.4, 6, 12], x: "-50%", y: "-50%" }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], times: [0, 0.15, 0.5, 1] }}
+            style={{
+              left: config.masterPosition.left,
+              top: config.masterPosition.top,
+              width: config.masterPosition.size,
+              height: config.masterPosition.size,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,245,220,0.95) 25%, rgba(180,220,240,0.7) 55%, rgba(255,255,255,0) 80%)",
+              mixBlendMode: "screen",
+              filter: "blur(2px)",
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* LAYER 5: Master-Hover-Preview-Card (rechts der Master-Orb) */}
       <AnimatePresence>
         {phase === "idle" && masterHovered && (
@@ -362,13 +401,17 @@ export function PondExperience() {
                   ease: "easeOut",
                 }}
                 style={{
-                  width: "clamp(80px, 10vw, 160px)",
-                  height: "clamp(80px, 10vw, 160px)",
+                  // Doppelt so gross wie vorher (80-160 -> 160-320) - Kugeln wie der Master.
+                  width: "clamp(160px, 20vw, 300px)",
+                  height: "clamp(160px, 20vw, 300px)",
                   background: "transparent",
                   border: "none",
                   padding: 0,
                   zIndex: 10 + pos.z,
                   transformOrigin: "center center",
+                  // Schlagschatten unter der Kugel simuliert, dass sie AUF dem Blatt liegt.
+                  filter:
+                    "drop-shadow(0 8px 12px rgba(0, 20, 10, 0.35)) drop-shadow(0 2px 4px rgba(0, 30, 20, 0.5))",
                 }}
               >
                 <img
