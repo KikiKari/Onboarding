@@ -205,8 +205,8 @@ export function PondExperience() {
             style={{
               left: "50%",
               top: "45%",
-              width: "clamp(160px, 20vw, 340px)",
-              height: "clamp(160px, 20vw, 340px)",
+              width: "clamp(220px, 28vw, 480px)",
+              height: "clamp(220px, 28vw, 480px)",
               transform: "translate(-50%, -50%)",
               background: "transparent",
               border: "none",
