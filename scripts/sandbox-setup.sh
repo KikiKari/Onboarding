@@ -41,6 +41,15 @@ if [[ $SKIP_HEAVY -eq 0 ]]; then
   apt_install blender blender
 fi
 
+# Git-Push-Weg: Der Session-Git-Proxy (origin) ist read-only. Pushes laufen
+# direkt zu github.com mit dem Nutzer-PAT (GH_ACCESS_TOKEN aus Umgebungs-Env
+# oder .env, geliefert vom Credential-Helper — kein Secret in der Git-Config).
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  git config credential."https://x-access-token@github.com".helper "!$(pwd)/.claude/git-credential-pat.sh"
+  git remote set-url --push origin "https://x-access-token@github.com/KikiKari/Onboarding.git"
+  log "Git-Push-Route: direkt zu github.com (PAT via Credential-Helper)"
+fi
+
 # Docker-Daemon fuer Dev-Compose-Verifikation in der Sandbox.
 # Docker-Hub-Blobs (cloudfront.docker.com) sind von der Netz-Policy blockiert —
 # mirror.gcr.io liefert die Library-Images. Container brauchen zusaetzlich die
