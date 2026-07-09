@@ -76,13 +76,23 @@ mkdirSync(PROFILE, { recursive: true });
 // Sandbox-Egress läuft über den Agent-Proxy (MITM mit CA in /root/.ccr).
 // Chrome muss den Proxy nutzen; die CA ist zuvor via certutil in ~/.pki/nssdb
 // importiert (siehe docs/VISUAL_QA.md), damit TLS ohne Fehler verifiziert.
-const PROXY = process.env.HTTPS_PROXY || process.env.https_proxy || null;
+// --socks <server>: leitet den Browser über einen SOCKS5-Proxy (z. B. den
+// Tailscale-Userspace-Proxy localhost:1055) — sauberer Egress am Agent-MITM-
+// Proxy vorbei, nötig für github.com/Codespaces. Sonst der Agent-HTTPS-Proxy.
+const SOCKS = flag("socks", null);
+const PROXY = SOCKS
+  ? `socks5://${SOCKS}`
+  : (process.env.HTTPS_PROXY || process.env.https_proxy || null);
 
 const ctx = await chromium.launchPersistentContext(PROFILE, {
   headless: false,
   executablePath: CHROME,
   viewport: { width: 1440, height: 900 },
   acceptDownloads: true,
+  // --insecure: akzeptiert das re-signierte Zertifikat des eigenen Agent-MITM-
+  // Proxys (z. B. HSTS-Hosts wie github.com, wo der NSS-Trust im persistenten
+  // Kontext nicht greift). Nur für den bekannten Sandbox-Proxy gedacht.
+  ignoreHTTPSErrors: has("insecure"),
   // Playwright verwaltet den Proxy zuverlässiger als das rohe --proxy-server-Arg;
   // bypass für loopback (Dev-Server) und interne Hosts.
   proxy: PROXY ? { server: PROXY, bypass: "localhost,127.0.0.1,::1" } : undefined,
