@@ -2,13 +2,14 @@
 # Provisioniert die Claude-Code-Sandbox (Remote-Umgebung) reproduzierbar:
 #   - Node-Dependencies (Frontend, npm)
 #   - Python-Dependencies (Backend inkl. pytest)
-#   - Medien-Tools: ffmpeg, ImageMagick (apt) — Fehlschlag blockiert die Session nicht
-#   - optional: --with-blender fuer Headless-Renders (grosser Download, nur bei Bedarf)
-# Idempotent: bereits Vorhandenes wird uebersprungen.
+#   - Medien-Tools: ffmpeg, ImageMagick, GIMP, Blender headless (apt) —
+#     Fehlschlag blockiert die Session nicht; --skip-heavy laesst GIMP/Blender aus
+# Idempotent: bereits Vorhandenes wird uebersprungen; der Container-Cache der
+# Umgebung macht die apt-Installation zum Einmal-Aufwand.
 set -uo pipefail
 
-WITH_BLENDER=0
-[[ "${1:-}" == "--with-blender" ]] && WITH_BLENDER=1
+SKIP_HEAVY=0
+[[ "${1:-}" == "--skip-heavy" ]] && SKIP_HEAVY=1
 
 cd "$(dirname "$0")/.."
 log() { printf '[sandbox-setup] %s\n' "$*"; }
@@ -35,7 +36,10 @@ apt_install() {
 
 apt_install ffmpeg ffmpeg
 apt_install imagemagick convert
-[[ $WITH_BLENDER -eq 1 ]] && apt_install blender blender
+if [[ $SKIP_HEAVY -eq 0 ]]; then
+  apt_install gimp gimp
+  apt_install blender blender
+fi
 
 # Docker-Daemon fuer Dev-Compose-Verifikation in der Sandbox.
 # Docker-Hub-Blobs (cloudfront.docker.com) sind von der Netz-Policy blockiert —
@@ -55,5 +59,6 @@ node --version | sed 's/^/[sandbox-setup]   node /'
 python3 --version | sed 's/^/[sandbox-setup]   /'
 command -v ffmpeg  >/dev/null && ffmpeg -version 2>/dev/null | head -1 | sed 's/^/[sandbox-setup]   /'
 command -v convert >/dev/null && convert -version 2>/dev/null | head -1 | sed 's/^/[sandbox-setup]   /'
+command -v gimp    >/dev/null && gimp --version 2>/dev/null | head -1 | sed 's/^/[sandbox-setup]   /'
 command -v blender >/dev/null && blender --version 2>/dev/null | head -1 | sed 's/^/[sandbox-setup]   /'
 exit 0
