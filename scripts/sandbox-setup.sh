@@ -37,6 +37,19 @@ apt_install ffmpeg ffmpeg
 apt_install imagemagick convert
 [[ $WITH_BLENDER -eq 1 ]] && apt_install blender blender
 
+# Docker-Daemon fuer Dev-Compose-Verifikation in der Sandbox.
+# Docker-Hub-Blobs (cloudfront.docker.com) sind von der Netz-Policy blockiert —
+# mirror.gcr.io liefert die Library-Images. Container brauchen zusaetzlich die
+# Proxy-CA (siehe docker-compose.sandbox.yml).
+if command -v dockerd >/dev/null 2>&1 && ! docker info >/dev/null 2>&1; then
+  log "Starte Docker-Daemon (Registry-Mirror: mirror.gcr.io) …"
+  mkdir -p /etc/docker
+  [[ -f /etc/docker/daemon.json ]] || echo '{"registry-mirrors":["https://mirror.gcr.io"]}' > /etc/docker/daemon.json
+  (dockerd >/tmp/dockerd.log 2>&1 &)
+  for _ in $(seq 1 15); do docker info >/dev/null 2>&1 && break; sleep 1; done
+  docker info >/dev/null 2>&1 && log "Docker-Daemon laeuft" || log "WARNUNG: Docker-Daemon nicht gestartet"
+fi
+
 log "Fertig. Versionen:"
 node --version | sed 's/^/[sandbox-setup]   node /'
 python3 --version | sed 's/^/[sandbox-setup]   /'
