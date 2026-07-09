@@ -8,3 +8,6 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
 fi
 
 "$CLAUDE_PROJECT_DIR/scripts/sandbox-setup.sh"
+
+# VPN-Brücke (Tailscale) reproduzierbar herstellen — No-op ohne Auth-Key in .env.
+"$CLAUDE_PROJECT_DIR/scripts/sandbox-vpn.sh" || true
