@@ -24,3 +24,7 @@ design-reference/
 coverage/
 
 .vercel
+
+# Persistente Browser-Profile (Cookies/Sessions) — nie committen
+.browser-profile/
+visual-qa-out/

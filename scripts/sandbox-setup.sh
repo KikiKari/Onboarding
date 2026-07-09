@@ -41,6 +41,41 @@ if [[ $SKIP_HEAVY -eq 0 ]]; then
   apt_install blender blender
 fi
 
+# Visual QA: echtes Google Chrome (H.264/AAC-Codecs → Videos sichtbar; der
+# Playwright-Bundle-Chromium hat keine proprietären Codecs), Xvfb (headed-Läufe
+# für echte Web-Logins) und NSS-Tools, um die Proxy-CA in Chromes Trust-Store zu
+# importieren. Ohne all das: Videos schwarz bzw. TLS-Fehler beim externen Surfen.
+apt_install xvfb Xvfb
+apt_install x11-utils xdpyinfo
+apt_install libnss3-tools certutil
+if ! command -v google-chrome-stable >/dev/null 2>&1; then
+  log "Installiere Google Chrome Stable …"
+  TMPDEB=$(mktemp --suffix=.deb)
+  if curl -fsSL -o "$TMPDEB" https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb; then
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "$TMPDEB" >/dev/null 2>&1 \
+      && log "Chrome installiert: $(google-chrome-stable --version 2>/dev/null)" \
+      || log "WARNUNG: Chrome-Installation fehlgeschlagen"
+  else
+    log "WARNUNG: Chrome-Download fehlgeschlagen (Netzwerk-Policy?)"
+  fi
+  rm -f "$TMPDEB"
+fi
+# Proxy-CA in Chromes NSS-DB, damit externes HTTPS ohne Zertifikatsfehler läuft.
+if command -v certutil >/dev/null 2>&1 && [[ -f /root/.ccr/ca-bundle.crt ]]; then
+  mkdir -p "$HOME/.pki/nssdb"
+  certutil -d sql:"$HOME/.pki/nssdb" -N --empty-password 2>/dev/null || true
+  certutil -d sql:"$HOME/.pki/nssdb" -L 2>/dev/null | grep -q ccr-proxy-ca \
+    || certutil -d sql:"$HOME/.pki/nssdb" -A -t "C,," -n ccr-proxy-ca -i /root/.ccr/ca-bundle.crt 2>/dev/null \
+    && log "Proxy-CA in Chrome-NSS-Store importiert"
+fi
+# Playwright-Node-Module ins Projekt verlinken (visual-qa.mjs / browser-session.mjs).
+if [[ -d node_modules ]] && ! [[ -e node_modules/playwright ]]; then
+  if command -v npm >/dev/null 2>&1; then
+    npm install --no-audit --no-fund --no-save playwright >/dev/null 2>&1 \
+      && log "Playwright (Node) installiert" || log "WARNUNG: Playwright-npm-Install fehlgeschlagen"
+  fi
+fi
+
 # Git-Push-Weg: Der Session-Git-Proxy (origin) ist read-only. Pushes laufen
 # direkt zu github.com mit dem Nutzer-PAT (GH_ACCESS_TOKEN aus Umgebungs-Env
 # oder .env, geliefert vom Credential-Helper — kein Secret in der Git-Config).
